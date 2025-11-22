@@ -1,0 +1,17 @@
+.home-page {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   min-height: 60vh;
+}
+
+.loading-state {
+   text-align: center;
+   color: #6b7280;
+}
+
+.loading-state p {
+   font-size: 16px;
+   margin: 0;
+}
+

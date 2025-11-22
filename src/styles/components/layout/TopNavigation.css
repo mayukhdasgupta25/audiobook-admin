@@ -1,0 +1,86 @@
+.top-navigation {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: 16px 24px;
+   background-color: white;
+   border-bottom: 1px solid #e5e7eb;
+   height: 70px;
+   position: sticky;
+   top: 0;
+   z-index: 100;
+}
+
+.top-nav-left {
+   flex: 0 0 auto;
+}
+
+.top-nav-app-name {
+   margin: 0;
+   font-size: 20px;
+   font-weight: 700;
+   color: #111827;
+   cursor: pointer;
+   transition: color 0.2s;
+}
+
+.top-nav-app-name:hover {
+   color: #2563eb;
+}
+
+.top-nav-center {
+   flex: 1;
+   display: flex;
+   justify-content: center;
+   padding: 0 24px;
+}
+
+.top-nav-right {
+   flex: 0 0 auto;
+   display: flex;
+   align-items: center;
+   gap: 12px;
+}
+
+.profile-dropdown-wrapper {
+   position: relative;
+}
+
+.top-nav-icon-btn {
+   width: 40px;
+   height: 40px;
+   border: none;
+   background: none;
+   border-radius: 8px;
+   cursor: pointer;
+   font-size: 20px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+   transform: scale(1);
+}
+
+.top-nav-icon-btn:hover {
+   background-color: #f3f4f6;
+   transform: scale(1.1);
+}
+
+.top-nav-icon-btn:active {
+   transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+   .top-navigation {
+      padding: 12px 16px;
+   }
+
+   .top-nav-center {
+      padding: 0 12px;
+   }
+
+   .top-nav-app-name {
+      font-size: 18px;
+   }
+}
+

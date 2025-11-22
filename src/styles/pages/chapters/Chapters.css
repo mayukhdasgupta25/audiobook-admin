@@ -1,0 +1,63 @@
+.chapters-page {
+   max-width: 1200px;
+   margin: 0;
+   padding: 0;
+}
+
+.chapters-header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   margin: 0 0 24px 0;
+   padding: 0;
+   gap: 16px;
+}
+
+.chapters-header-right {
+   display: flex;
+   align-items: center;
+   gap: 16px;
+}
+
+.chapters-header h2 {
+   margin: 0;
+   font-size: 28px;
+   font-weight: 700;
+   color: #111827;
+}
+
+.chapters-list {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+   gap: 20px;
+   margin-bottom: 32px;
+   position: relative;
+}
+
+.loading-state,
+.empty-state,
+.error-state {
+   text-align: center;
+   padding: 60px 20px;
+   color: #6b7280;
+}
+
+.empty-state p,
+.error-state p {
+   font-size: 16px;
+   margin: 0 0 20px 0;
+}
+
+@media (max-width: 768px) {
+   .chapters-header {
+      flex-direction: column;
+      align-items: flex-start;
+   }
+
+   .chapters-header-right {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+   }
+}
+

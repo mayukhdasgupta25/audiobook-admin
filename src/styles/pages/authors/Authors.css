@@ -1,0 +1,28 @@
+.authors-page {
+   max-width: 1200px;
+   margin: 0;
+   padding: 0;
+}
+
+.authors-page h2 {
+   margin: 0 0 24px 0;
+   padding: 0;
+   font-size: 28px;
+   font-weight: 700;
+   color: #111827;
+}
+
+.placeholder-content {
+   background: white;
+   border: 1px solid #e5e7eb;
+   border-radius: 8px;
+   padding: 60px 20px;
+   text-align: center;
+   color: #6b7280;
+}
+
+.placeholder-content p {
+   font-size: 16px;
+   margin: 0;
+}
+

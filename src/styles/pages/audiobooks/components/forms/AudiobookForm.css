@@ -1,0 +1,320 @@
+.audiobook-form {
+   display: flex;
+   flex-direction: column;
+   gap: 20px;
+}
+
+.form-group {
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+}
+
+.form-group label {
+   font-size: 14px;
+   font-weight: 500;
+   color: #374151;
+}
+
+.required {
+   color: #dc2626;
+}
+
+.optional-text {
+   color: #6b7280;
+   font-size: 12px;
+   font-weight: normal;
+   margin-left: 8px;
+}
+
+.current-image-preview {
+   margin-bottom: 12px;
+   padding: 8px;
+   background-color: #f9fafb;
+   border: 1px solid #e5e7eb;
+   border-radius: 6px;
+}
+
+.current-image-text {
+   margin: 8px 0 0 0;
+   font-size: 12px;
+   color: #6b7280;
+   font-style: italic;
+}
+
+.form-group input,
+.form-group textarea {
+   padding: 10px 12px;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   font-size: 14px;
+   font-family: inherit;
+   transition: all 0.2s;
+   background-color: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+   outline: none;
+   border-color: #2563eb;
+   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group input.input-error,
+.form-group textarea.input-error {
+   border-color: #dc2626;
+}
+
+.form-group textarea {
+   resize: vertical;
+   min-height: 100px;
+}
+
+
+.error-message {
+   color: #dc2626;
+   font-size: 12px;
+   margin-top: -4px;
+}
+
+.loading-message {
+   color: #6b7280;
+   font-size: 12px;
+   font-style: italic;
+}
+
+.tags-container {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 12px;
+   padding: 12px;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   background-color: #f9fafb;
+   min-height: 60px;
+}
+
+.tag-checkbox {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   cursor: pointer;
+   padding: 6px 12px;
+   background-color: white;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   transition: all 0.2s;
+   font-size: 14px;
+   user-select: none;
+}
+
+.tag-checkbox:hover {
+   border-color: #2563eb;
+   background-color: #eff6ff;
+}
+
+.tag-checkbox input[type="checkbox"] {
+   margin: 0;
+   cursor: pointer;
+}
+
+.tag-checkbox input[type="checkbox"]:checked + span {
+   font-weight: 500;
+   color: #2563eb;
+}
+
+.tag-checkbox:has(input[type="checkbox"]:checked) {
+   border-color: #2563eb;
+   background-color: #eff6ff;
+}
+
+.file-input {
+   padding: 8px;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   font-size: 14px;
+   font-family: inherit;
+   background-color: white;
+   cursor: pointer;
+   width: 100%;
+   transition: border-color 0.2s;
+}
+
+.file-input:hover {
+   border-color: #9ca3af;
+}
+
+.file-input:focus {
+   outline: none;
+   border-color: #2563eb;
+   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.file-preview {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   margin-top: 8px;
+   padding: 8px 12px;
+   background-color: #f9fafb;
+   border: 1px solid #e5e7eb;
+   border-radius: 6px;
+   font-size: 14px;
+}
+
+.file-name {
+   color: #374151;
+   flex: 1;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.file-remove {
+   padding: 4px 8px;
+   background-color: #fee2e2;
+   color: #dc2626;
+   border: none;
+   border-radius: 4px;
+   font-size: 12px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: background-color 0.2s;
+   margin-left: 8px;
+}
+
+.file-remove:hover {
+   background-color: #fecaca;
+}
+
+.form-actions {
+   display: flex;
+   gap: 12px;
+   justify-content: flex-end;
+   margin-top: 8px;
+   padding-top: 20px;
+   border-top: 1px solid #e5e7eb;
+}
+
+/* DatePicker Styles */
+.audiobook-form .date-picker-input {
+   width: 100%;
+   padding: 10px 12px;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   font-size: 14px;
+   font-family: inherit;
+   transition: all 0.2s;
+   background-color: white;
+   color: #374151;
+}
+
+.audiobook-form .date-picker-input:focus {
+   outline: none;
+   border-color: #2563eb;
+   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.audiobook-form .date-picker-input.input-error {
+   border-color: #dc2626;
+}
+
+/* React DatePicker Calendar Styles */
+.react-datepicker {
+   font-family: inherit;
+   border: 1px solid #d1d5db;
+   border-radius: 8px;
+   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.react-datepicker__header {
+   background-color: #f9fafb;
+   border-bottom: 1px solid #e5e7eb;
+   border-top-left-radius: 8px;
+   border-top-right-radius: 8px;
+   padding-top: 8px;
+}
+
+.react-datepicker__current-month {
+   font-weight: 600;
+   color: #374151;
+   font-size: 14px;
+}
+
+.react-datepicker__day-name {
+   color: #6b7280;
+   font-weight: 500;
+   font-size: 12px;
+}
+
+.react-datepicker__day {
+   color: #374151;
+   border-radius: 6px;
+   margin: 2px;
+}
+
+.react-datepicker__day:hover {
+   background-color: #eff6ff;
+   border-radius: 6px;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+   background-color: #2563eb;
+   color: white;
+   border-radius: 6px;
+}
+
+.react-datepicker__day--selected:hover,
+.react-datepicker__day--keyboard-selected:hover {
+   background-color: #1d4ed8;
+}
+
+.react-datepicker__day--today {
+   font-weight: 600;
+}
+
+.react-datepicker__day--disabled {
+   color: #d1d5db;
+   cursor: not-allowed;
+}
+
+.react-datepicker__time-container {
+   border-left: 1px solid #e5e7eb;
+}
+
+.react-datepicker__time-container .react-datepicker__time {
+   background-color: white;
+}
+
+.react-datepicker__time-list-item {
+   padding: 8px 10px;
+   font-size: 14px;
+}
+
+.react-datepicker__time-list-item:hover {
+   background-color: #eff6ff;
+}
+
+.react-datepicker__time-list-item--selected {
+   background-color: #2563eb;
+   color: white;
+   font-weight: 500;
+}
+
+.react-datepicker__time-list-item--selected:hover {
+   background-color: #1d4ed8;
+}
+
+.react-datepicker__navigation {
+   top: 10px;
+}
+
+.react-datepicker__navigation-icon::before {
+   border-color: #6b7280;
+}
+
+.react-datepicker__navigation:hover *::before {
+   border-color: #374151;
+}
+

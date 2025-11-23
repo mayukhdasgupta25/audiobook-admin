@@ -34,6 +34,12 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, trig
          }
       };
 
+      const handleEscape = (event: KeyboardEvent) => {
+         if (event.key === 'Escape') {
+            onClose();
+         }
+      };
+
       if (isOpen) {
          document.addEventListener('mousedown', handleClickOutside);
          document.addEventListener('keydown', handleEscape);
@@ -44,12 +50,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, trig
          document.removeEventListener('keydown', handleEscape);
       };
    }, [isOpen, onClose, triggerRef]);
-
-   const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-         onClose();
-      }
-   };
 
    const handleLogout = async () => {
       try {

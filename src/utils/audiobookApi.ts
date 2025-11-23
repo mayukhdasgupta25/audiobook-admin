@@ -171,6 +171,7 @@ export async function createAudiobook(
       } else {
          // No file, use JSON - exclude duration and fileSize
          const headers = getAuthHeaders();
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
          const { duration, fileSize, ...jsonData } = audiobookData;
          const response = await fetch(`${getContentApiBaseUrl()}/api/v1/audiobooks`, {
             method: 'POST',
@@ -299,6 +300,7 @@ export async function updateAudiobook(
       } else {
          // No file, use JSON - exclude duration and fileSize
          const headers = getAuthHeaders();
+         // eslint-disable-next-line @typescript-eslint/no-unused-vars
          const { audiobookId, coverImage, duration, fileSize, ...jsonData } = audiobookData;
          const response = await fetch(`${getContentApiBaseUrl()}/api/v1/audiobooks/${audiobookId}`, {
             method: 'PUT',
@@ -339,13 +341,13 @@ export async function deleteAudiobook(audiobookId: string): Promise<void> {
       });
 
       // DELETE requests may return empty body (204 No Content) or JSON
-      let data: any = null;
+      let data: ApiError | null = null;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
          const text = await response.text();
          if (text.trim()) {
             try {
-               data = JSON.parse(text);
+               data = JSON.parse(text) as ApiError;
             } catch {
                // Empty or invalid JSON - treat as success if status is ok
                data = null;
@@ -631,13 +633,13 @@ export async function deleteChapter(chapterId: string): Promise<void> {
       });
 
       // DELETE requests may return empty body (204 No Content) or JSON
-      let data: any = null;
+      let data: ApiError | null = null;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
          const text = await response.text();
          if (text.trim()) {
             try {
-               data = JSON.parse(text);
+               data = JSON.parse(text) as ApiError;
             } catch {
                // Empty or invalid JSON - treat as success if status is ok
                data = null;

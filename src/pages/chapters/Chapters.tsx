@@ -172,7 +172,7 @@ const Chapters: React.FC = () => {
             }
          }
       }, 300);
-   }, [dispatch, id, currentPage, chapters]);
+   }, [dispatch, id, currentPage]);
 
    // Handle drag end
    const handleDragEnd = async (event: DragEndEvent) => {

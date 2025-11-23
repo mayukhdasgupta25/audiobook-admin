@@ -26,7 +26,7 @@ export function getContentApiBaseUrl(): string {
    const baseUrl = import.meta.env.VITE_API_CONTENT_BASE_URL;
    if (!baseUrl) {
       // Fallback to default development URL
-      return 'http://localhost:8081';
+      return 'http://localhost:8082';
    }
    return baseUrl;
 }

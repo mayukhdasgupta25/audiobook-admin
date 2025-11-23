@@ -55,3 +55,33 @@ body {
   min-height: 100vh;
 }
 
+/* Ensure react-hot-toast close button is visible */
+[data-hot-toast] button[aria-label] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: inherit !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  margin-left: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 4px !important;
+  transition: background-color 0.2s !important;
+}
+
+[data-hot-toast] button[aria-label]:hover {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure close button icon is visible */
+[data-hot-toast] button[aria-label] svg {
+  width: 16px !important;
+  height: 16px !important;
+  display: block !important;
+}
+

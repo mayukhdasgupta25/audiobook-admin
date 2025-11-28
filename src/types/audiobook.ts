@@ -31,6 +31,7 @@ export interface AudiobookApiResponse {
    title: string;
    author: string;
    narrator?: string;
+   narrators?: string[];
    description: string;
    duration?: number;
    fileSize?: number;
@@ -45,6 +46,8 @@ export interface AudiobookApiResponse {
    updatedAt?: string;
    audiobookTags?: AudiobookTag[];
    genre?: AudiobookGenre;
+   genres?: AudiobookGenre[];
+   meta?: Record<string, string>;
 }
 
 /**
@@ -81,12 +84,13 @@ export interface Chapter {
 export interface AudiobookFormData {
    title: string;
    author: string;
-   narrator: string;
+   narrators: string[];
    description: string;
-   genre: Genre | '';
+   genres: Genre[];
    tags: Tag[];
    coverImage: File | null;
    scheduledAt?: string;
+   meta: Record<string, string>;
 }
 
 /**
@@ -110,14 +114,15 @@ export interface ChapterFormData {
 export interface CreateAudiobookRequest {
    title: string;
    author: string;
-   narrator?: string;
+   narrators?: string[];
    description: string;
-   genreId: string;
+   genreIds: string[];
    tagIds: string[];
    duration: number;
    fileSize: number;
    coverImage?: File;
    scheduledAt?: string;
+   meta?: Record<string, string>;
 }
 
 /**
@@ -127,14 +132,15 @@ export interface UpdateAudiobookRequest {
    audiobookId: string;
    title?: string;
    author?: string;
-   narrator?: string;
+   narrators?: string[];
    description?: string;
-   genreId?: string;
+   genreIds?: string[];
    tagIds?: string[];
    duration?: number;
    fileSize?: number;
    coverImage?: File;
    scheduledAt?: string;
+   meta?: Record<string, string>;
 }
 
 /**

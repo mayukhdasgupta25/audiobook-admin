@@ -2,7 +2,7 @@
  * Audiobook Form component
  */
 
-import React, { useState, FormEvent, useEffect } from 'react';
+import React, { useState, FormEvent, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAppDispatch, useAppSelector } from '../../../../hooks/redux';
@@ -11,7 +11,6 @@ import { fetchTags } from '../../../../store/slices/tagsSlice';
 import { createAudiobookThunk, updateAudiobookThunk, fetchAudiobooks } from '../../../../store/slices/audiobooksSlice';
 import type { AudiobookFormData, AudiobookApiResponse } from '../../../../types/audiobook';
 import Button from '../../../../components/common/Button';
-import Select from '../../../../components/common/Select';
 import { showApiError } from '../../../../utils/toast';
 import '../../../../styles/pages/audiobooks/components/forms/AudiobookForm.css';
 
@@ -32,26 +31,45 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
    // Initialize form data from initialData if provided
    const getInitialFormData = (): AudiobookFormData => {
       if (initialData) {
+         // Handle multiple genres - support both old (genre) and new (genres) API response formats
+         const genreIds: string[] = [];
+         if (initialData.genres && initialData.genres.length > 0) {
+            genreIds.push(...initialData.genres.map((g) => genres.find((genre) => genre.name === g.name)?.id || '').filter((id) => id));
+         } else if (initialData.genre?.name) {
+            const genreId = genres.find((g) => g.name === initialData.genre?.name)?.id;
+            if (genreId) genreIds.push(genreId);
+         }
+
+         // Handle multiple narrators - support both old (narrator) and new (narrators) API response formats
+         const narrators: string[] = [];
+         if (initialData.narrators && initialData.narrators.length > 0) {
+            narrators.push(...initialData.narrators);
+         } else if (initialData.narrator) {
+            narrators.push(initialData.narrator);
+         }
+
          return {
             title: initialData.title || '',
             author: initialData.author || '',
-            narrator: initialData.narrator || '',
+            narrators,
             description: initialData.description || '',
-            genre: initialData.genre?.name ? genres.find((g) => g.name === initialData.genre?.name)?.id || '' : '',
+            genres: genreIds,
             tags: initialData.audiobookTags?.map((tag) => tags.find((t) => t.name === tag.name)?.id || '').filter((id) => id) || [],
             coverImage: null,
             scheduledAt: undefined, // Note: scheduledAt may not be in API response
+            meta: initialData.meta || {},
          };
       }
       return {
          title: '',
          author: '',
-         narrator: '',
+         narrators: [],
          description: '',
-         genre: '',
+         genres: [],
          tags: [],
          coverImage: null,
          scheduledAt: undefined,
+         meta: {},
       };
    };
 
@@ -72,15 +90,33 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
    // Update form data when initialData or genres/tags change (for edit mode)
    useEffect(() => {
       if (initialData && genres.length > 0 && tags.length > 0) {
+         // Handle multiple genres
+         const genreIds: string[] = [];
+         if (initialData.genres && initialData.genres.length > 0) {
+            genreIds.push(...initialData.genres.map((g) => genres.find((genre) => genre.name === g.name)?.id || '').filter((id) => id));
+         } else if (initialData.genre?.name) {
+            const genreId = genres.find((g) => g.name === initialData.genre?.name)?.id;
+            if (genreId) genreIds.push(genreId);
+         }
+
+         // Handle multiple narrators
+         const narrators: string[] = [];
+         if (initialData.narrators && initialData.narrators.length > 0) {
+            narrators.push(...initialData.narrators);
+         } else if (initialData.narrator) {
+            narrators.push(initialData.narrator);
+         }
+
          setFormData({
             title: initialData.title || '',
             author: initialData.author || '',
-            narrator: initialData.narrator || '',
+            narrators,
             description: initialData.description || '',
-            genre: genres.find((g) => g.name === initialData.genre?.name)?.id || '',
+            genres: genreIds,
             tags: initialData.audiobookTags?.map((tag) => tags.find((t) => t.name === tag.name)?.id || '').filter((id) => id) || [],
             coverImage: null,
             scheduledAt: undefined,
+            meta: initialData.meta || {},
          });
       }
    }, [initialData, genres, tags]);
@@ -104,8 +140,8 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
          newErrors.description = 'Description is required';
       }
 
-      if (!formData.genre) {
-         newErrors.genre = 'Genre is required';
+      if (formData.genres.length === 0) {
+         newErrors.genres = 'At least one genre is required';
       }
 
       if (formData.tags.length === 0) {
@@ -120,50 +156,52 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
       try {
          if (isEditMode && audiobookId) {
             // Update mode
-            const updateRequest: {
-               audiobookId: string;
-               title: string;
-               author: string;
-               narrator?: string;
-               description: string;
-               genreId: string;
-               tagIds: string[];
-               duration: number;
-               fileSize: number;
-               scheduledAt?: string;
-               coverImage?: File;
-            } = {
+            // Filter out empty keys and temporary keys (starting with __empty_) from meta
+            const filteredMeta = Object.entries(formData.meta)
+               .filter(([key, value]) => !key.startsWith('__empty_') && key.trim() && value.trim())
+               .reduce((acc, [key, value]) => {
+                  acc[key.trim()] = value.trim();
+                  return acc;
+               }, {} as Record<string, string>);
+
+            const updateRequest = {
                audiobookId,
                title: formData.title.trim(),
                author: formData.author.trim(),
-               narrator: formData.narrator.trim() || undefined,
+               narrators: formData.narrators.length > 0 ? formData.narrators.map((n) => n.trim()).filter((n) => n) : undefined,
                description: formData.description.trim(),
-               genreId: formData.genre,
+               genreIds: formData.genres,
                tagIds: formData.tags,
                duration: 0,
                fileSize: 0,
                scheduledAt: formData.scheduledAt,
+               coverImage: formData.coverImage || undefined,
+               meta: Object.keys(filteredMeta).length > 0 ? filteredMeta : undefined,
             };
-
-            // Only include coverImage if a new one is provided
-            if (formData.coverImage) {
-               updateRequest.coverImage = formData.coverImage;
-            }
 
             await dispatch(updateAudiobookThunk(updateRequest)).unwrap();
             await dispatch(fetchAudiobooks({ page: 1, filter }));
          } else {
             // Create mode
+            // Filter out empty keys and temporary keys (starting with __empty_) from meta
+            const filteredMeta = Object.entries(formData.meta)
+               .filter(([key, value]) => !key.startsWith('__empty_') && key.trim() && value.trim())
+               .reduce((acc, [key, value]) => {
+                  acc[key.trim()] = value.trim();
+                  return acc;
+               }, {} as Record<string, string>);
+
             const createRequest = {
                title: formData.title.trim(),
                author: formData.author.trim(),
-               narrator: formData.narrator.trim() || undefined,
+               narrators: formData.narrators.length > 0 ? formData.narrators.map((n) => n.trim()).filter((n) => n) : undefined,
                description: formData.description.trim(),
-               genreId: formData.genre,
+               genreIds: formData.genres,
                tagIds: formData.tags,
                duration: 0,
                fileSize: 0,
                coverImage: formData.coverImage || undefined,
+               meta: Object.keys(filteredMeta).length > 0 ? filteredMeta : undefined,
             };
 
             await dispatch(createAudiobookThunk(createRequest)).unwrap();
@@ -173,12 +211,13 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
             setFormData({
                title: '',
                author: '',
-               narrator: '',
+               narrators: [],
                description: '',
-               genre: '',
+               genres: [],
                tags: [],
                coverImage: null,
                scheduledAt: undefined,
+               meta: {},
             });
          }
 
@@ -209,8 +248,8 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
          newErrors.description = 'Description is required';
       }
 
-      if (!formData.genre) {
-         newErrors.genre = 'Genre is required';
+      if (formData.genres.length === 0) {
+         newErrors.genres = 'At least one genre is required';
       }
 
       if (formData.tags.length === 0) {
@@ -229,50 +268,53 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
       try {
          if (isEditMode && audiobookId) {
             // Update mode with schedule
-            const updateRequest: {
-               audiobookId: string;
-               title: string;
-               author: string;
-               narrator?: string;
-               description: string;
-               genreId: string;
-               tagIds: string[];
-               duration: number;
-               fileSize: number;
-               scheduledAt?: string;
-               coverImage?: File;
-            } = {
+            // Filter out empty keys and temporary keys (starting with __empty_) from meta
+            const filteredMeta = Object.entries(formData.meta)
+               .filter(([key, value]) => !key.startsWith('__empty_') && key.trim() && value.trim())
+               .reduce((acc, [key, value]) => {
+                  acc[key.trim()] = value.trim();
+                  return acc;
+               }, {} as Record<string, string>);
+
+            const updateRequest = {
                audiobookId,
                title: formData.title.trim(),
                author: formData.author.trim(),
-               narrator: formData.narrator.trim() || undefined,
+               narrators: formData.narrators.length > 0 ? formData.narrators.map((n) => n.trim()).filter((n) => n) : undefined,
                description: formData.description.trim(),
-               genreId: formData.genre,
+               genreIds: formData.genres,
                tagIds: formData.tags,
                duration: 0,
                fileSize: 0,
                scheduledAt: formData.scheduledAt,
+               coverImage: formData.coverImage || undefined,
+               meta: Object.keys(filteredMeta).length > 0 ? filteredMeta : undefined,
             };
-
-            if (formData.coverImage) {
-               updateRequest.coverImage = formData.coverImage;
-            }
 
             await dispatch(updateAudiobookThunk(updateRequest)).unwrap();
             await dispatch(fetchAudiobooks({ page: 1, filter }));
          } else {
             // Create mode with schedule
+            // Filter out empty keys and temporary keys (starting with __empty_) from meta
+            const filteredMeta = Object.entries(formData.meta)
+               .filter(([key, value]) => !key.startsWith('__empty_') && key.trim() && value.trim())
+               .reduce((acc, [key, value]) => {
+                  acc[key.trim()] = value.trim();
+                  return acc;
+               }, {} as Record<string, string>);
+
             const createRequest = {
                title: formData.title.trim(),
                author: formData.author.trim(),
-               narrator: formData.narrator.trim() || undefined,
+               narrators: formData.narrators.length > 0 ? formData.narrators.map((n) => n.trim()).filter((n) => n) : undefined,
                description: formData.description.trim(),
-               genreId: formData.genre,
+               genreIds: formData.genres,
                tagIds: formData.tags,
                duration: 0,
                fileSize: 0,
                coverImage: formData.coverImage || undefined,
                scheduledAt: formData.scheduledAt,
+               meta: Object.keys(filteredMeta).length > 0 ? filteredMeta : undefined,
             };
 
             await dispatch(createAudiobookThunk(createRequest)).unwrap();
@@ -282,12 +324,13 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
             setFormData({
                title: '',
                author: '',
-               narrator: '',
+               narrators: [],
                description: '',
-               genre: '',
+               genres: [],
                tags: [],
                coverImage: null,
                scheduledAt: undefined,
+               meta: {},
             });
          }
 
@@ -314,6 +357,176 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
       if (errors.tags) {
          setErrors({ ...errors, tags: '' });
       }
+   };
+
+   const handleGenreToggle = (genreId: string) => {
+      if (formData.genres.includes(genreId)) {
+         setFormData({
+            ...formData,
+            genres: formData.genres.filter((g) => g !== genreId),
+         });
+      } else {
+         setFormData({
+            ...formData,
+            genres: [...formData.genres, genreId],
+         });
+      }
+      if (errors.genres) {
+         setErrors({ ...errors, genres: '' });
+      }
+   };
+
+   const narratorInputRef = useRef<HTMLInputElement>(null);
+   const [narratorInputValue, setNarratorInputValue] = useState('');
+
+   const handleNarratorInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if ((e.key === 'Enter' || e.key === ',') && narratorInputValue.trim()) {
+         e.preventDefault();
+         const trimmedValue = narratorInputValue.trim();
+         if (trimmedValue && !formData.narrators.includes(trimmedValue)) {
+            setFormData({
+               ...formData,
+               narrators: [...formData.narrators, trimmedValue],
+            });
+            setNarratorInputValue('');
+         }
+      } else if (e.key === 'Backspace' && narratorInputValue === '' && formData.narrators.length > 0) {
+         // Remove last narrator if input is empty and backspace is pressed
+         setFormData({
+            ...formData,
+            narrators: formData.narrators.slice(0, -1),
+         });
+      }
+   };
+
+   const handleNarratorRemove = (narratorToRemove: string) => {
+      setFormData({
+         ...formData,
+         narrators: formData.narrators.filter((n) => n !== narratorToRemove),
+      });
+   };
+
+   // Use a state to track temporary editing keys to prevent re-rendering issues
+   // This allows the user to type in the key field without losing focus
+   const [editingMetaKeys, setEditingMetaKeys] = useState<Record<string, string>>({});
+
+   // Initialize editing keys when meta changes (but not on every render)
+   useEffect(() => {
+      const currentKeys = Object.keys(formData.meta);
+      const editingKeys = { ...editingMetaKeys };
+      let needsUpdate = false;
+
+      // Add missing keys to editing state
+      currentKeys.forEach((key) => {
+         if (!(key in editingKeys)) {
+            editingKeys[key] = key;
+            needsUpdate = true;
+         }
+      });
+
+      // Remove keys that no longer exist in meta
+      Object.keys(editingKeys).forEach((key) => {
+         if (!currentKeys.includes(key)) {
+            delete editingKeys[key];
+            needsUpdate = true;
+         }
+      });
+
+      if (needsUpdate) {
+         setEditingMetaKeys(editingKeys);
+      }
+   }, [formData.meta]);
+
+   // Convert meta object to array of [key, value] pairs for easier UI management
+   const metaEntries = Object.entries(formData.meta).map(([key, value]) => {
+      // Use editing key if available, otherwise use actual key
+      const displayKey = editingMetaKeys[key] !== undefined ? editingMetaKeys[key] : key;
+      return [displayKey, value, key] as [string, string, string]; // [displayKey, value, originalKey]
+   });
+
+   const handleMetaKeyChange = (originalKey: string, newKey: string) => {
+      // Update the editing key state (this doesn't cause re-render of the input)
+      setEditingMetaKeys({
+         ...editingMetaKeys,
+         [originalKey]: newKey,
+      });
+   };
+
+   const handleMetaKeyBlur = (originalKey: string) => {
+      const newKey = (editingMetaKeys[originalKey] ?? originalKey).trim();
+
+      // Only update meta if key actually changed and is not empty
+      if (newKey && newKey !== originalKey) {
+         const value = formData.meta[originalKey] || '';
+         const newMeta = { ...formData.meta };
+         delete newMeta[originalKey];
+         newMeta[newKey] = value;
+
+         // Update editing keys to reflect the new key
+         const updatedEditingKeys = { ...editingMetaKeys };
+         delete updatedEditingKeys[originalKey];
+         updatedEditingKeys[newKey] = newKey;
+         setEditingMetaKeys(updatedEditingKeys);
+
+         setFormData({
+            ...formData,
+            meta: newMeta,
+         });
+      } else if (!newKey.trim()) {
+         // If key is empty, remove the entry
+         const newMeta = { ...formData.meta };
+         delete newMeta[originalKey];
+
+         const updatedEditingKeys = { ...editingMetaKeys };
+         delete updatedEditingKeys[originalKey];
+         setEditingMetaKeys(updatedEditingKeys);
+
+         setFormData({
+            ...formData,
+            meta: newMeta,
+         });
+      }
+   };
+
+   const handleMetaValueChange = (key: string, newValue: string) => {
+      const newMeta = { ...formData.meta };
+      if (key.trim()) {
+         newMeta[key] = newValue;
+      }
+
+      setFormData({
+         ...formData,
+         meta: newMeta,
+      });
+   };
+
+   const handleMetaAdd = () => {
+      const newMeta = { ...formData.meta };
+      // Add a new entry with empty key and value
+      // Use a unique empty key to allow multiple empty entries
+      const emptyKey = `__empty_${Date.now()}`;
+      newMeta[emptyKey] = '';
+
+      // Add to editing keys
+      setEditingMetaKeys({
+         ...editingMetaKeys,
+         [emptyKey]: '',
+      });
+
+      setFormData({
+         ...formData,
+         meta: newMeta,
+      });
+   };
+
+   const handleMetaRemove = (key: string) => {
+      const newMeta = { ...formData.meta };
+      delete newMeta[key];
+
+      setFormData({
+         ...formData,
+         meta: newMeta,
+      });
    };
 
    return (
@@ -355,14 +568,33 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
          </div>
 
          <div className="form-group">
-            <label htmlFor="narrator">Narrator</label>
-            <input
-               id="narrator"
-               type="text"
-               value={formData.narrator}
-               onChange={(e) => setFormData({ ...formData, narrator: e.target.value })}
-               placeholder="Enter narrator name (optional)"
-            />
+            <label htmlFor="narrators">Narrators</label>
+            <div className="narrators-input-container">
+               {formData.narrators.map((narrator, index) => (
+                  <span key={`${narrator}-${index}`} className="narrator-tag">
+                     {narrator}
+                     <button
+                        type="button"
+                        className="narrator-tag-remove"
+                        onClick={() => handleNarratorRemove(narrator)}
+                        aria-label={`Remove ${narrator}`}
+                     >
+                        ×
+                     </button>
+                  </span>
+               ))}
+               <input
+                  ref={narratorInputRef}
+                  id="narrators"
+                  type="text"
+                  value={narratorInputValue}
+                  onChange={(e) => setNarratorInputValue(e.target.value)}
+                  onKeyDown={handleNarratorInputKeyDown}
+                  placeholder={formData.narrators.length === 0 ? 'Enter narrator name and press Enter or comma (optional)' : 'Add another narrator...'}
+                  className="narrators-input"
+               />
+            </div>
+            <p className="narrators-hint">Press Enter or comma to add a narrator</p>
          </div>
 
          <div className="form-group">
@@ -419,25 +651,26 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
          </div>
 
          <div className="form-group">
-            <label htmlFor="genre">
-               Genre <span className="required">*</span>
+            <label>
+               Genres <span className="required">*</span>
             </label>
-            <Select
-               id="genre"
-               value={formData.genre}
-               onChange={(e) => {
-                  setFormData({ ...formData, genre: e.target.value });
-                  setErrors({ ...errors, genre: '' });
-               }}
-               options={genres.map((genre) => ({
-                  value: genre.id,
-                  label: genre.name,
-               }))}
-               placeholder="Select a genre"
-               error={!!errors.genre}
-               loading={genresLoading}
-            />
-            {errors.genre && <span className="error-message">{errors.genre}</span>}
+            {genresLoading ? (
+               <div className="loading-message">Loading genres...</div>
+            ) : (
+               <div className={`genres-container ${errors.genres ? 'genres-error' : ''}`}>
+                  {genres.map((genre) => (
+                     <label key={genre.id} className="genre-checkbox">
+                        <input
+                           type="checkbox"
+                           checked={formData.genres.includes(genre.id)}
+                           onChange={() => handleGenreToggle(genre.id)}
+                        />
+                        <span>{genre.name}</span>
+                     </label>
+                  ))}
+               </div>
+            )}
+            {errors.genres && <span className="error-message">{errors.genres}</span>}
          </div>
 
          <div className="form-group">
@@ -493,6 +726,52 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
                isClearable
             />
             {errors.scheduledAt && <span className="error-message">{errors.scheduledAt}</span>}
+         </div>
+
+         <div className="form-group">
+            <label>Additional Info</label>
+            <div className="meta-container">
+               {metaEntries.length === 0 ? (
+                  <p className="meta-empty-message">No additional info added. Click "Add New" to add more details about the audiobook.</p>
+               ) : (
+                  metaEntries.map(([displayKey, value, originalKey], index) => (
+                     <div key={`${originalKey}-${index}`} className="meta-row">
+                        <input
+                           type="text"
+                           value={displayKey}
+                           onChange={(e) => handleMetaKeyChange(originalKey, e.target.value)}
+                           onBlur={() => handleMetaKeyBlur(originalKey)}
+                           placeholder="Add key (e.g., Producer, DOP, etc.)"
+                           className="meta-key-input"
+                        />
+                        <span className="meta-separator">:</span>
+                        <input
+                           type="text"
+                           value={value}
+                           onChange={(e) => handleMetaValueChange(originalKey, e.target.value)}
+                           placeholder="Add value (e.g., Producer, DOP, etc.)"
+                           className="meta-value-input"
+                        />
+                        <button
+                           type="button"
+                           className="meta-remove-button"
+                           onClick={() => handleMetaRemove(originalKey)}
+                           aria-label={`Remove ${originalKey || 'entry'}`}
+                        >
+                           ×
+                        </button>
+                     </div>
+                  ))
+               )}
+               <button
+                  type="button"
+                  className="meta-add-button"
+                  onClick={handleMetaAdd}
+               >
+                  + Add New
+               </button>
+            </div>
+            <p className="meta-hint">Add custom key-value pairs for additional information</p>
          </div>
 
          <div className="form-actions">

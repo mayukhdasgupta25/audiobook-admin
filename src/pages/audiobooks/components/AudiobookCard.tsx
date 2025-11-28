@@ -52,15 +52,27 @@ const AudiobookCard: React.FC<AudiobookCardProps> = ({ audiobook, onClick, onEdi
          <div className="audiobook-card-content">
             <h3 className="audiobook-card-title">{audiobook.title}</h3>
             <p className="audiobook-card-author">by {audiobook.author}</p>
-            {audiobook.narrator && (
+            {/* Support both old (narrator) and new (narrators) formats */}
+            {(audiobook.narrators && audiobook.narrators.length > 0) ? (
+               <p className="audiobook-card-narrator">
+                  Narrated by {audiobook.narrators.join(', ')}
+               </p>
+            ) : audiobook.narrator ? (
                <p className="audiobook-card-narrator">Narrated by {audiobook.narrator}</p>
-            )}
+            ) : null}
             <div className="audiobook-card-badges">
-               {audiobook.genre && (
+               {/* Support both old (genre) and new (genres) formats */}
+               {audiobook.genres && audiobook.genres.length > 0 ? (
+                  audiobook.genres.map((genre, index) => (
+                     <span key={`${genre.name}-${index}`} className="audiobook-card-badge audiobook-card-badge-genre">
+                        {genre.name}
+                     </span>
+                  ))
+               ) : audiobook.genre ? (
                   <span className="audiobook-card-badge audiobook-card-badge-genre">
                      {audiobook.genre.name}
                   </span>
-               )}
+               ) : null}
                {audiobook.audiobookTags && audiobook.audiobookTags.length > 0 && (
                   <>
                      {audiobook.audiobookTags.map((tag, index) => (

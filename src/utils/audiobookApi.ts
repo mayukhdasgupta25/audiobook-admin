@@ -133,14 +133,21 @@ export async function createAudiobook(
          // Text fields
          formData.append('title', audiobookData.title);
          formData.append('author', audiobookData.author);
-         if (audiobookData.narrator) {
-            formData.append('narrator', audiobookData.narrator);
+         if (audiobookData.narrators && audiobookData.narrators.length > 0) {
+            formData.append('narrators', JSON.stringify(audiobookData.narrators));
          }
          formData.append('description', audiobookData.description);
-         formData.append('genreId', audiobookData.genreId);
+
+         // Send genreIds as JSON array string
+         formData.append('genreIds', JSON.stringify(audiobookData.genreIds));
 
          // Send tagIds as JSON array string
          formData.append('tagIds', JSON.stringify(audiobookData.tagIds));
+
+         // Send meta as JSON object string if provided
+         if (audiobookData.meta !== undefined && Object.keys(audiobookData.meta).length > 0) {
+            formData.append('meta', JSON.stringify(audiobookData.meta));
+         }
 
          // File field - only coverImage, NO audio files
          formData.append('coverImage', audiobookData.coverImage, audiobookData.coverImage.name);
@@ -261,18 +268,21 @@ export async function updateAudiobook(
          if (audiobookData.author !== undefined) {
             formData.append('author', audiobookData.author);
          }
-         if (audiobookData.narrator !== undefined) {
-            formData.append('narrator', audiobookData.narrator);
+         if (audiobookData.narrators !== undefined && audiobookData.narrators.length > 0) {
+            formData.append('narrators', JSON.stringify(audiobookData.narrators));
          }
          if (audiobookData.description !== undefined) {
             formData.append('description', audiobookData.description);
          }
-         if (audiobookData.genreId !== undefined) {
-            formData.append('genreId', audiobookData.genreId);
+         if (audiobookData.genreIds !== undefined && audiobookData.genreIds.length > 0) {
+            formData.append('genreIds', JSON.stringify(audiobookData.genreIds));
          }
          if (audiobookData.tagIds !== undefined) {
             // Send tagIds as JSON array string
             formData.append('tagIds', JSON.stringify(audiobookData.tagIds));
+         }
+         if (audiobookData.meta !== undefined && Object.keys(audiobookData.meta).length > 0) {
+            formData.append('meta', JSON.stringify(audiobookData.meta));
          }
          formData.append('coverImage', audiobookData.coverImage);
          if (audiobookData.scheduledAt !== undefined) {

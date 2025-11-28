@@ -83,7 +83,8 @@
    font-style: italic;
 }
 
-.tags-container {
+.tags-container,
+.genres-container {
    display: flex;
    flex-wrap: wrap;
    gap: 12px;
@@ -92,9 +93,15 @@
    border-radius: 6px;
    background-color: #f9fafb;
    min-height: 60px;
+   transition: border-color 0.2s;
 }
 
-.tag-checkbox {
+.genres-container.genres-error {
+   border-color: #dc2626;
+}
+
+.tag-checkbox,
+.genre-checkbox {
    display: flex;
    align-items: center;
    gap: 6px;
@@ -108,22 +115,26 @@
    user-select: none;
 }
 
-.tag-checkbox:hover {
+.tag-checkbox:hover,
+.genre-checkbox:hover {
    border-color: #2563eb;
    background-color: #eff6ff;
 }
 
-.tag-checkbox input[type="checkbox"] {
+.tag-checkbox input[type="checkbox"],
+.genre-checkbox input[type="checkbox"] {
    margin: 0;
    cursor: pointer;
 }
 
-.tag-checkbox input[type="checkbox"]:checked + span {
+.tag-checkbox input[type="checkbox"]:checked + span,
+.genre-checkbox input[type="checkbox"]:checked + span {
    font-weight: 500;
    color: #2563eb;
 }
 
-.tag-checkbox:has(input[type="checkbox"]:checked) {
+.tag-checkbox:has(input[type="checkbox"]:checked),
+.genre-checkbox:has(input[type="checkbox"]:checked) {
    border-color: #2563eb;
    background-color: #eff6ff;
 }
@@ -316,5 +327,235 @@
 
 .react-datepicker__navigation:hover *::before {
    border-color: #374151;
+}
+
+/* Narrators Input Styles */
+.narrators-input-container {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   padding: 10px 12px;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   background-color: white;
+   min-height: 48px;
+   align-items: center;
+   transition: all 0.2s;
+}
+
+.narrators-input-container:focus-within {
+   border-color: #2563eb;
+   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.narrator-tag {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   padding: 6px 10px;
+   background-color: #eff6ff;
+   border: 1px solid #2563eb;
+   border-radius: 6px;
+   font-size: 14px;
+   color: #1e40af;
+   font-weight: 500;
+   animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+   from {
+      opacity: 0;
+      transform: scale(0.9);
+   }
+   to {
+      opacity: 1;
+      transform: scale(1);
+   }
+}
+
+.narrator-tag-remove {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 18px;
+   height: 18px;
+   padding: 0;
+   margin-left: 4px;
+   background-color: transparent;
+   border: none;
+   border-radius: 50%;
+   color: #1e40af;
+   font-size: 18px;
+   font-weight: bold;
+   line-height: 1;
+   cursor: pointer;
+   transition: all 0.2s;
+}
+
+.narrator-tag-remove:hover {
+   background-color: #dbeafe;
+   color: #dc2626;
+   transform: scale(1.1);
+}
+
+.narrator-tag-remove:active {
+   transform: scale(0.95);
+}
+
+.narrators-input {
+   flex: 1;
+   min-width: 200px;
+   border: none;
+   outline: none;
+   font-size: 14px;
+   font-family: inherit;
+   background-color: transparent;
+   color: #374151;
+   padding: 0;
+}
+
+.narrators-input::placeholder {
+   color: #9ca3af;
+}
+
+.narrators-hint {
+   margin: 4px 0 0 0;
+   font-size: 12px;
+   color: #6b7280;
+   font-style: italic;
+}
+
+/* Meta (Additional Info) Key-Value Pair Styles */
+.meta-container {
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   padding: 12px;
+   border: 1px solid #d1d5db;
+   border-radius: 6px;
+   background-color: #f9fafb;
+   min-height: 80px;
+}
+
+.meta-empty-message {
+   margin: 0;
+   padding: 12px;
+   text-align: center;
+   color: #6b7280;
+   font-size: 14px;
+   font-style: italic;
+}
+
+.meta-row {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   padding: 8px;
+   background-color: white;
+   border: 1px solid #e5e7eb;
+   border-radius: 6px;
+   transition: all 0.2s;
+   animation: fadeIn 0.2s ease-in;
+}
+
+.meta-row:hover {
+   border-color: #2563eb;
+   box-shadow: 0 1px 3px rgba(37, 99, 235, 0.1);
+}
+
+.meta-key-input,
+.meta-value-input {
+   flex: 1;
+   padding: 8px 12px;
+   border: 1px solid #d1d5db;
+   border-radius: 4px;
+   font-size: 14px;
+   font-family: inherit;
+   transition: all 0.2s;
+   background-color: white;
+}
+
+.meta-key-input {
+   min-width: 150px;
+   font-weight: 500;
+   color: #374151;
+}
+
+.meta-value-input {
+   min-width: 200px;
+   color: #374151;
+}
+
+.meta-key-input:focus,
+.meta-value-input:focus {
+   outline: none;
+   border-color: #2563eb;
+   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.meta-separator {
+   color: #6b7280;
+   font-weight: 600;
+   font-size: 16px;
+   user-select: none;
+}
+
+.meta-remove-button {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 28px;
+   height: 28px;
+   padding: 0;
+   background-color: #fee2e2;
+   color: #dc2626;
+   border: none;
+   border-radius: 50%;
+   font-size: 20px;
+   font-weight: bold;
+   line-height: 1;
+   cursor: pointer;
+   transition: all 0.2s;
+   flex-shrink: 0;
+}
+
+.meta-remove-button:hover {
+   background-color: #fecaca;
+   transform: scale(1.1);
+}
+
+.meta-remove-button:active {
+   transform: scale(0.95);
+}
+
+.meta-add-button {
+   padding: 10px 16px;
+   background-color: white;
+   color: #2563eb;
+   border: 2px dashed #2563eb;
+   border-radius: 6px;
+   font-size: 14px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.2s;
+   align-self: center;
+   margin: 0 auto;
+}
+
+.meta-add-button:hover {
+   background-color: #eff6ff;
+   border-color: #1d4ed8;
+   color: #1d4ed8;
+}
+
+.meta-add-button:active {
+   transform: scale(0.98);
+}
+
+.meta-hint {
+   margin: 4px 0 0 0;
+   font-size: 12px;
+   color: #6b7280;
+   font-style: italic;
 }
 

@@ -46,6 +46,7 @@ const Audiobooks: React.FC = () => {
          (ab) =>
             ab.title.toLowerCase().includes(query) ||
             ab.author.toLowerCase().includes(query) ||
+            (ab.narrators && ab.narrators.some((n) => n.toLowerCase().includes(query))) ||
             (ab.narrator && ab.narrator.toLowerCase().includes(query))
       );
    }, [audiobooks, searchQuery]);

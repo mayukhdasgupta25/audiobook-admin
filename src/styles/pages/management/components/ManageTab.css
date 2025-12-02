@@ -1,0 +1,225 @@
+.manage-tab {
+   display: flex;
+   flex-direction: column;
+   gap: 48px;
+}
+
+.manage-section {
+   display: flex;
+   flex-direction: column;
+   gap: 24px;
+}
+
+.section-header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 16px;
+   flex-wrap: wrap;
+}
+
+.section-title-group {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+}
+
+.section-title {
+   margin: 0;
+   padding: 0;
+   font-size: 24px;
+   font-weight: 700;
+   color: var(--color-text-primary);
+   background: var(--color-primary-gradient);
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+   background-clip: text;
+}
+
+.section-count {
+   font-size: 16px;
+   font-weight: 600;
+   color: var(--color-primary);
+   background: var(--color-primary-light);
+   padding: 4px 12px;
+   border-radius: 12px;
+   box-shadow: var(--shadow-xs);
+}
+
+.section-actions {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   flex-wrap: wrap;
+}
+
+.section-search {
+   min-width: 250px;
+   flex: 1;
+   max-width: 400px;
+}
+
+.loading-container {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   padding: 60px 20px;
+}
+
+.empty-state {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   padding: 80px 20px;
+   text-align: center;
+   background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-primary-light) 100%);
+   border: 2px dashed var(--color-border);
+   border-radius: 16px;
+   transition: all var(--transition-slow);
+   box-shadow: var(--shadow-sm);
+}
+
+.empty-state:hover {
+   border-color: var(--color-primary);
+   background: linear-gradient(135deg, var(--color-primary-light) 0%, #E0E7FF 100%);
+   box-shadow: var(--shadow-md);
+   transform: translateY(-2px);
+}
+
+.empty-state-icon {
+   font-size: 64px;
+   margin-bottom: 16px;
+   opacity: 0.6;
+}
+
+.empty-state-title {
+   margin: 0 0 8px 0;
+   padding: 0;
+   font-size: 20px;
+   font-weight: 600;
+   color: #111827;
+}
+
+.empty-state-message {
+   margin: 0 0 24px 0;
+   padding: 0;
+   font-size: 16px;
+   color: #6b7280;
+   max-width: 400px;
+}
+
+.items-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+   gap: 20px;
+}
+
+.item-card {
+   background: white;
+   border: 1px solid var(--color-border);
+   border-radius: 16px;
+   padding: 20px;
+   transition: all var(--transition-slow);
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+   box-shadow: var(--shadow-md);
+   position: relative;
+   overflow: hidden;
+}
+
+.item-card::before {
+   content: '';
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   height: 3px;
+   background: var(--color-primary-gradient);
+   opacity: 0;
+   transition: opacity var(--transition-base);
+}
+
+.item-card:hover {
+   border-color: var(--color-primary);
+   box-shadow: var(--shadow-lg), var(--shadow-colored);
+   transform: translateY(-4px);
+}
+
+.item-card:hover::before {
+   opacity: 1;
+}
+
+.item-card-content {
+   flex: 1;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+}
+
+.item-name {
+   margin: 0;
+   padding: 0;
+   font-size: 18px;
+   font-weight: 600;
+   color: var(--color-text-primary);
+   line-height: 1.4;
+}
+
+.item-type {
+   margin: 0;
+   padding: 0;
+   font-size: 14px;
+   color: var(--color-text-secondary);
+   font-weight: 500;
+}
+
+.item-meta {
+   margin: 0;
+   padding: 0;
+   font-size: 12px;
+   color: var(--color-text-tertiary);
+   font-weight: 400;
+}
+
+.item-card-actions {
+   display: flex;
+   gap: 8px;
+   padding-top: 12px;
+   border-top: 1px solid var(--color-border);
+}
+
+.action-button {
+   flex: 1;
+}
+
+@media (max-width: 768px) {
+   .manage-tab {
+      gap: 32px;
+   }
+
+   .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+   }
+
+   .section-actions {
+      width: 100%;
+   }
+
+   .section-search {
+      min-width: 100%;
+      max-width: 100%;
+   }
+
+   .items-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+   }
+
+   .item-card {
+      padding: 16px;
+   }
+}
+

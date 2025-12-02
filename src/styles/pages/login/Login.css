@@ -5,22 +5,41 @@
   min-height: 100vh;
   width: 100%;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4F46E5 0%, #6366F1 50%, #8B5CF6 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .login-card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  box-shadow: var(--shadow-xl), 0 0 60px rgba(79, 70, 229, 0.2);
   padding: 40px;
   width: 100%;
   max-width: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .login-title {
   font-size: 28px;
   font-weight: 700;
-  color: #333;
+  background: var(--color-primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 8px;
   text-align: center;
 }
@@ -61,7 +80,9 @@
 }
 
 .form-group input:focus {
-  border-color: #667eea;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1), var(--shadow-sm);
+  transform: translateY(-1px);
 }
 
 .form-group input:disabled {
@@ -89,24 +110,27 @@
 
 .login-button {
   padding: 14px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary-gradient);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
+  transition: all var(--transition-base);
   margin-top: 8px;
+  box-shadow: var(--shadow-md), var(--shadow-colored);
 }
 
 .login-button:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #4338CA 0%, #6366F1 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 8px 25px rgba(79, 70, 229, 0.3);
 }
 
 .login-button:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .login-button:disabled {

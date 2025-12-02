@@ -8,6 +8,7 @@ import audiobooksReducer from './slices/audiobooksSlice';
 import chaptersReducer from './slices/chaptersSlice';
 import genresReducer from './slices/genresSlice';
 import tagsReducer from './slices/tagsSlice';
+import authorsReducer from './slices/authorsSlice';
 
 export const store = configureStore({
    reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
       chapters: chaptersReducer,
       genres: genresReducer,
       tags: tagsReducer,
+      authors: authorsReducer,
    },
 });
 

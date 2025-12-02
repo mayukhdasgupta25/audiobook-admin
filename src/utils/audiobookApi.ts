@@ -119,6 +119,475 @@ export async function getTags(): Promise<TagItem[]> {
    }
 }
 
+/**
+ * API response structure for a single genre
+ */
+export interface GenreResponse {
+   success: boolean;
+   data: GenreItem;
+   message: string;
+   statusCode: number;
+   timestamp: string;
+   path: string;
+}
+
+/**
+ * API response structure for a single tag
+ */
+export interface TagResponse {
+   success: boolean;
+   data: TagItem;
+   message: string;
+   statusCode: number;
+   timestamp: string;
+   path: string;
+}
+
+/**
+ * Creates a new genre
+ * @param name - The name of the genre
+ * @returns Promise resolving to created genre or throwing an error
+ */
+export async function createGenre(name: string): Promise<GenreItem> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/genres/`, {
+         method: 'POST',
+         headers,
+         body: JSON.stringify({ name }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to create genre',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const genreResponse = data as GenreResponse;
+      return genreResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Updates an existing genre
+ * @param id - The ID of the genre to update
+ * @param name - The new name of the genre
+ * @returns Promise resolving to updated genre or throwing an error
+ */
+export async function updateGenre(id: string, name: string): Promise<GenreItem> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/genres/${id}`, {
+         method: 'PUT',
+         headers,
+         body: JSON.stringify({ name }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to update genre',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const genreResponse = data as GenreResponse;
+      return genreResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Deletes a genre
+ * @param id - The ID of the genre to delete
+ * @returns Promise resolving to success response or throwing an error
+ */
+export async function deleteGenre(id: string): Promise<void> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/genres/${id}`, {
+         method: 'DELETE',
+         headers,
+      });
+
+      // DELETE requests may return empty body (204 No Content) or JSON
+      let data: ApiError | null = null;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+         const text = await response.text();
+         if (text.trim()) {
+            try {
+               data = JSON.parse(text) as ApiError;
+            } catch {
+               // Empty or invalid JSON - treat as success if status is ok
+               data = null;
+            }
+         }
+      }
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data?.message || data?.error || 'Failed to delete genre',
+            error: data?.error || 'DeleteFailed',
+            statusCode: response.status,
+         };
+         throw error;
+      }
+      // Success - DELETE operations may return empty body
+   } catch (error) {
+      // Only re-throw if it's not already an ApiError
+      if (error && typeof error === 'object' && 'message' in error && 'error' in error) {
+         throw error;
+      }
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Creates a new tag
+ * @param name - The name of the tag
+ * @param type - Optional type of the tag
+ * @returns Promise resolving to created tag or throwing an error
+ */
+export async function createTag(name: string, type?: string): Promise<TagItem> {
+   try {
+      const headers = getAuthHeaders();
+
+      const body: { name: string; type?: string } = { name };
+      if (type) {
+         body.type = type;
+      }
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/tags/`, {
+         method: 'POST',
+         headers,
+         body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to create tag',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const tagResponse = data as TagResponse;
+      return tagResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Updates an existing tag
+ * @param id - The ID of the tag to update
+ * @param name - The new name of the tag
+ * @param type - Optional new type of the tag
+ * @returns Promise resolving to updated tag or throwing an error
+ */
+export async function updateTag(id: string, name: string, type?: string): Promise<TagItem> {
+   try {
+      const headers = getAuthHeaders();
+
+      const body: { name: string; type?: string } = { name };
+      if (type) {
+         body.type = type;
+      }
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/tags/${id}`, {
+         method: 'PUT',
+         headers,
+         body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to update tag',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const tagResponse = data as TagResponse;
+      return tagResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Deletes a tag
+ * @param id - The ID of the tag to delete
+ * @returns Promise resolving to success response or throwing an error
+ */
+export async function deleteTag(id: string): Promise<void> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/tags/${id}`, {
+         method: 'DELETE',
+         headers,
+      });
+
+      // DELETE requests may return empty body (204 No Content) or JSON
+      let data: ApiError | null = null;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+         const text = await response.text();
+         if (text.trim()) {
+            try {
+               data = JSON.parse(text) as ApiError;
+            } catch {
+               // Empty or invalid JSON - treat as success if status is ok
+               data = null;
+            }
+         }
+      }
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data?.message || data?.error || 'Failed to delete tag',
+            error: data?.error || 'DeleteFailed',
+            statusCode: response.status,
+         };
+         throw error;
+      }
+      // Success - DELETE operations may return empty body
+   } catch (error) {
+      // Only re-throw if it's not already an ApiError
+      if (error && typeof error === 'object' && 'message' in error && 'error' in error) {
+         throw error;
+      }
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Author item from API response
+ */
+export interface AuthorItem {
+   id: string;
+   firstName: string;
+   lastName: string;
+   email: string;
+   address?: string;
+   contact?: string;
+   createdAt: string;
+   updatedAt: string;
+}
+
+/**
+ * API response structure for authors
+ */
+export interface AuthorsResponse {
+   success: boolean;
+   data: AuthorItem[];
+   message: string;
+   statusCode: number;
+   timestamp: string;
+   path: string;
+}
+
+/**
+ * API response structure for a single author
+ */
+export interface AuthorResponse {
+   success: boolean;
+   data: AuthorItem;
+   message: string;
+   statusCode: number;
+   timestamp: string;
+   path: string;
+}
+
+/**
+ * Request interface for creating an author
+ */
+export interface CreateAuthorRequest {
+   firstName: string;
+   lastName: string;
+   email: string;
+   address?: string;
+   contact?: string;
+}
+
+/**
+ * Request interface for updating an author
+ */
+export interface UpdateAuthorRequest {
+   firstName?: string;
+   lastName?: string;
+   email?: string;
+   address?: string;
+   contact?: string;
+}
+
+/**
+ * Fetches authors from the API
+ * @returns Promise resolving to authors response or throwing an error
+ */
+export async function getAuthors(): Promise<AuthorItem[]> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/authors`, {
+         method: 'GET',
+         headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to fetch authors',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const authorsResponse = data as AuthorsResponse;
+      return authorsResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Creates a new author
+ * @param authorData - Author data to create
+ * @returns Promise resolving to created author or throwing an error
+ */
+export async function createAuthor(authorData: CreateAuthorRequest): Promise<AuthorItem> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/authors/`, {
+         method: 'POST',
+         headers,
+         body: JSON.stringify(authorData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to create author',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const authorResponse = data as AuthorResponse;
+      return authorResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Updates an existing author
+ * @param id - The ID of the author to update
+ * @param authorData - Author data to update
+ * @returns Promise resolving to updated author or throwing an error
+ */
+export async function updateAuthor(id: string, authorData: UpdateAuthorRequest): Promise<AuthorItem> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/authors/${id}`, {
+         method: 'PUT',
+         headers,
+         body: JSON.stringify(authorData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to update author',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const authorResponse = data as AuthorResponse;
+      return authorResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Deletes an author
+ * @param id - The ID of the author to delete
+ * @returns Promise resolving to success response or throwing an error
+ */
+export async function deleteAuthor(id: string): Promise<void> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/authors/${id}`, {
+         method: 'DELETE',
+         headers,
+      });
+
+      // DELETE requests may return empty body (204 No Content) or JSON
+      let data: ApiError | null = null;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+         const text = await response.text();
+         if (text.trim()) {
+            try {
+               data = JSON.parse(text) as ApiError;
+            } catch {
+               // Empty or invalid JSON - treat as success if status is ok
+               data = null;
+            }
+         }
+      }
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data?.message || data?.error || 'Failed to delete author',
+            error: data?.error || 'DeleteFailed',
+            statusCode: response.status,
+         };
+         throw error;
+      }
+      // Success - DELETE operations may return empty body
+   } catch (error) {
+      // Only re-throw if it's not already an ApiError
+      if (error && typeof error === 'object' && 'message' in error && 'error' in error) {
+         throw error;
+      }
+      throw handleApiError(error);
+   }
+}
+
 export async function createAudiobook(
    audiobookData: CreateAudiobookRequest
 ): Promise<AudiobookApiResponse> {

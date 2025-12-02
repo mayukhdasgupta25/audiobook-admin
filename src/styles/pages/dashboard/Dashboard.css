@@ -1,10 +1,10 @@
-.inbox-page {
+.dashboard-page {
    max-width: 1200px;
    margin: 0;
    padding: 0;
 }
 
-.inbox-page h2 {
+.dashboard-page h2 {
    margin: 0 0 24px 0;
    padding: 0;
    font-size: 28px;

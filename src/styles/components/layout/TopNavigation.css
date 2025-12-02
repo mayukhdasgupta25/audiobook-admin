@@ -3,12 +3,14 @@
    align-items: center;
    justify-content: space-between;
    padding: 16px 24px;
-   background-color: white;
-   border-bottom: 1px solid #e5e7eb;
+   background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+   border-bottom: 1px solid var(--color-border);
    height: 70px;
    position: sticky;
    top: 0;
    z-index: 100;
+   box-shadow: var(--shadow-sm);
+   backdrop-filter: blur(10px);
 }
 
 .top-nav-left {
@@ -19,13 +21,17 @@
    margin: 0;
    font-size: 20px;
    font-weight: 700;
-   color: #111827;
+   background: var(--color-primary-gradient);
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+   background-clip: text;
    cursor: pointer;
-   transition: color 0.2s;
+   transition: all var(--transition-base);
 }
 
 .top-nav-app-name:hover {
-   color: #2563eb;
+   filter: brightness(1.1);
+   transform: scale(1.02);
 }
 
 .top-nav-center {
@@ -62,8 +68,10 @@
 }
 
 .top-nav-icon-btn:hover {
-   background-color: #f3f4f6;
+   background: linear-gradient(135deg, var(--color-primary-light) 0%, #E0E7FF 100%);
+   color: var(--color-primary);
    transform: scale(1.1);
+   box-shadow: var(--shadow-sm);
 }
 
 .top-nav-icon-btn:active {

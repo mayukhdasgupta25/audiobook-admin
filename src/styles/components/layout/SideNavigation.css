@@ -1,13 +1,14 @@
 .side-navigation {
    width: 240px;
-   background-color: white;
-   border-right: 1px solid #e5e7eb;
+   background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+   border-right: 1px solid var(--color-border);
    height: calc(100vh - 70px);
    position: fixed;
    top: 70px;
    left: 0;
    overflow-y: auto;
    z-index: 10;
+   box-shadow: var(--shadow-md);
 }
 
 .side-nav-list {
@@ -26,26 +27,33 @@
    display: flex;
    align-items: center;
    gap: 12px;
-   color: #6b7280;
+   color: var(--color-text-secondary);
    font-size: 15px;
    font-weight: 500;
-   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+   transition: all var(--transition-base);
    border-left: 3px solid transparent;
    position: relative;
+   margin: 4px 8px;
+   border-radius: 8px;
 }
 
 .side-nav-item:hover {
-   background-color: #f9fafb;
-   color: #111827;
+   background: linear-gradient(90deg, var(--color-primary-light) 0%, transparent 100%);
+   color: var(--color-primary);
    transform: translateX(4px);
 }
 
 .side-nav-item.active {
-   background-color: #eff6ff;
-   color: #2563eb;
-   border-left-color: #2563eb;
+   background: var(--color-primary-gradient);
+   color: white;
+   border-left-color: transparent;
    font-weight: 600;
    transform: translateX(0);
+   box-shadow: var(--shadow-colored);
+}
+
+.side-nav-item.active .side-nav-icon {
+   filter: brightness(0) invert(1);
 }
 
 .side-nav-icon {

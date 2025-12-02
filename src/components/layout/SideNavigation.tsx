@@ -13,9 +13,9 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-   { label: 'Analytics', path: '/analytics', icon: '📊' },
+   { label: 'Dashboard', path: '/dashboard', icon: '📊' },
    { label: 'Audiobooks', path: '/audiobooks', icon: '📚' },
-   { label: 'Authors', path: '/authors', icon: '✍️' },
+   { label: 'Management', path: '/management', icon: '⚙️' },
    { label: 'Inbox', path: '/inbox', icon: '📬' },
 ];
 

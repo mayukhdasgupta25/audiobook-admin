@@ -5,8 +5,8 @@ import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Audiobooks from './pages/audiobooks/Audiobooks';
 import Chapters from './pages/chapters/Chapters';
-import Analytics from './pages/analytics/Analytics';
-import Authors from './pages/authors/Authors';
+import Dashboard from './pages/dashboard/Dashboard';
+import Management from './pages/management/Management';
 import Inbox from './pages/inbox/Inbox';
 
 /**
@@ -36,8 +36,9 @@ function App() {
                <Route path="/home" element={<Home />} />
                <Route path="/audiobooks" element={<Audiobooks />} />
                <Route path="/audiobooks/:id/chapters" element={<Chapters />} />
-               <Route path="/analytics" element={<Analytics />} />
-               <Route path="/authors" element={<Authors />} />
+               <Route path="/analytics" element={<Navigate to="/dashboard" replace />} />
+               <Route path="/dashboard" element={<Dashboard />} />
+               <Route path="/management" element={<Management />} />
                <Route path="/inbox" element={<Inbox />} />
             </Route>
             <Route path="*" element={<Navigate to="/home" replace />} />

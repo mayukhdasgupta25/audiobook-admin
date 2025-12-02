@@ -6,7 +6,7 @@ import React from 'react';
 import '../../styles/components/common/Button.css';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'warning';
+   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'warning' | 'edit';
    size?: 'small' | 'medium' | 'large';
    isLoading?: boolean;
    children: React.ReactNode;

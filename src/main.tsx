@@ -24,16 +24,18 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                },
                error: {
                   style: {
-                     background: '#fee2e2',
+                     background: 'var(--color-danger-light)',
                      color: '#991b1b',
-                     border: '1px solid #fca5a5',
+                     border: '1px solid var(--color-danger)',
+                     boxShadow: 'var(--shadow-md)',
                   },
                },
                success: {
                   style: {
-                     background: '#dcfce7',
+                     background: 'var(--color-success-light)',
                      color: '#166534',
-                     border: '1px solid #86efac',
+                     border: '1px solid var(--color-success)',
+                     boxShadow: 'var(--shadow-md)',
                   },
                },
             }}

@@ -94,7 +94,7 @@ const AudiobookCard: React.FC<AudiobookCardProps> = ({ audiobook, onClick, onEdi
                {onEdit && (
                   <Button
                      type="button"
-                     variant="secondary"
+                     variant="edit"
                      size="small"
                      onClick={handleEdit}
                   >

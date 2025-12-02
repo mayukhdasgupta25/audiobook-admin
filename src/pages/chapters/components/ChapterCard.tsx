@@ -86,7 +86,7 @@ const ChapterCard: React.FC<ChapterCardProps> = ({ chapter, onEdit, onDelete }) 
                {onEdit && (
                   <Button
                      type="button"
-                     variant="secondary"
+                     variant="edit"
                      size="small"
                      onClick={(e) => {
                         e.stopPropagation();

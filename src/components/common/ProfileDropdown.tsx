@@ -5,9 +5,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../hooks/redux';
-import { logout as logoutAction } from '../../store/slices/authSlice';
 import { logout } from '../../utils/api';
-import { setAuthenticated } from '../../utils/auth';
+import { clearClientAuthSession } from '../../utils/authSession';
 import { showApiError } from '../../utils/toast';
 import '../../styles/components/common/ProfileDropdown.css';
 
@@ -54,17 +53,13 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, trig
    const handleLogout = async () => {
       try {
          await logout();
-         dispatch(logoutAction());
-         setAuthenticated(false);
-         navigate('/', { replace: true });
       } catch (error) {
          showApiError(error);
-         // Still logout locally even if API call fails
-         dispatch(logoutAction());
-         setAuthenticated(false);
-         navigate('/', { replace: true });
+      } finally {
+         clearClientAuthSession(dispatch);
+         navigate('/login', { replace: true });
+         onClose();
       }
-      onClose();
    };
 
    if (!isOpen) return null;

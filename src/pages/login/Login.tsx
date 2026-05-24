@@ -6,6 +6,7 @@ import { isAuthenticated, setAuthenticated } from '../../utils/auth';
 import { setAuthenticated as setAuthRedux, setUser } from '../../store/slices/authSlice';
 import type { LoginRequest, LoginResponse } from '../../types/auth';
 import { showApiError } from '../../utils/toast';
+import { validateEmail } from '../../utils/validation';
 import '../../styles/pages/login/Login.css';
 
 function Login() {
@@ -25,14 +26,6 @@ function Login() {
          navigate('/home', { replace: true });
       }
    }, [navigate, isAuth]);
-
-   /**
-    * Validates email format using basic regex pattern
-    */
-   const validateEmail = (emailValue: string): boolean => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(emailValue);
-   };
 
    /**
     * Handles form submission

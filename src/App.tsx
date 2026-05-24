@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector } from './hooks/redux';
+import Landing from './pages/landing/Landing';
 import Login from './pages/login/Login';
+import PartnerRegister from './pages/partner/PartnerRegister';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Audiobooks from './pages/audiobooks/Audiobooks';
@@ -16,7 +18,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
    const { isAuthenticated } = useAppSelector((state) => state.auth);
 
    if (!isAuthenticated) {
-      return <Navigate to="/" replace />;
+      return <Navigate to="/login" replace />;
    }
    return children;
 };
@@ -25,7 +27,9 @@ function App() {
    return (
       <BrowserRouter>
          <Routes>
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/partner/register" element={<PartnerRegister />} />
             <Route
                element={
                   <ProtectedRoute>

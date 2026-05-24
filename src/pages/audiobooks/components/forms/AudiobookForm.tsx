@@ -10,6 +10,7 @@ import { fetchGenres } from '../../../../store/slices/genresSlice';
 import { fetchTags } from '../../../../store/slices/tagsSlice';
 import { createAudiobookThunk, updateAudiobookThunk, fetchAudiobooks } from '../../../../store/slices/audiobooksSlice';
 import type { AudiobookFormData, AudiobookApiResponse } from '../../../../types/audiobook';
+import { getOrganizations } from '../../../../utils/audiobookApi';
 import Button from '../../../../components/common/Button';
 import { showApiError } from '../../../../utils/toast';
 import '../../../../styles/pages/audiobooks/components/forms/AudiobookForm.css';
@@ -77,6 +78,11 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
 
    const [errors, setErrors] = useState<Partial<Record<keyof AudiobookFormData, string>>>({});
 
+   const [organizationId, setOrganizationId] = useState<string>('');
+   const [organizationName, setOrganizationName] = useState<string>('');
+   const [organizationsLoading, setOrganizationsLoading] = useState(false);
+   const [organizationError, setOrganizationError] = useState<string>('');
+
    // Fetch genres and tags on mount
    useEffect(() => {
       if (genres.length === 0) {
@@ -86,6 +92,35 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
          dispatch(fetchTags());
       }
    }, [dispatch, genres.length, tags.length]);
+
+   // Fetch organization for create mode
+   useEffect(() => {
+      if (isEditMode) {
+         return;
+      }
+
+      const fetchOrganization = async () => {
+         setOrganizationsLoading(true);
+         setOrganizationError('');
+         try {
+            const memberships = await getOrganizations();
+            const membership = memberships[0];
+            if (membership?.organization) {
+               setOrganizationId(membership.organization.id);
+               setOrganizationName(membership.organization.name);
+            } else {
+               setOrganizationError('No organization found for your account');
+            }
+         } catch (error) {
+            showApiError(error);
+            setOrganizationError('Failed to load organization');
+         } finally {
+            setOrganizationsLoading(false);
+         }
+      };
+
+      fetchOrganization();
+   }, [isEditMode]);
 
    // Update form data when initialData or genres/tags change (for edit mode)
    useEffect(() => {
@@ -148,7 +183,11 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
          newErrors.tags = 'At least one tag is required';
       }
 
-      if (Object.keys(newErrors).length > 0) {
+      if (!isEditMode && !organizationId) {
+         setOrganizationError('Organization is required');
+      }
+
+      if (Object.keys(newErrors).length > 0 || (!isEditMode && !organizationId)) {
          setErrors(newErrors);
          return;
       }
@@ -198,6 +237,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
                description: formData.description.trim(),
                genreIds: formData.genres,
                tagIds: formData.tags,
+               organizationId,
                duration: 0,
                fileSize: 0,
                coverImage: formData.coverImage || undefined,
@@ -260,7 +300,11 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
          newErrors.scheduledAt = 'Schedule date and time is required';
       }
 
-      if (Object.keys(newErrors).length > 0) {
+      if (!isEditMode && !organizationId) {
+         setOrganizationError('Organization is required');
+      }
+
+      if (Object.keys(newErrors).length > 0 || (!isEditMode && !organizationId)) {
          setErrors(newErrors);
          return;
       }
@@ -310,6 +354,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
                description: formData.description.trim(),
                genreIds: formData.genres,
                tagIds: formData.tags,
+               organizationId,
                duration: 0,
                fileSize: 0,
                coverImage: formData.coverImage || undefined,
@@ -566,6 +611,20 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({ audiobookId, initialData,
             />
             {errors.author && <span className="error-message">{errors.author}</span>}
          </div>
+
+         {!isEditMode && (
+            <div className="form-group">
+               <label htmlFor="organization">Organization</label>
+               <input
+                  id="organization"
+                  type="text"
+                  value={organizationsLoading ? 'Loading organization...' : organizationName}
+                  readOnly
+                  className="readonly-input"
+               />
+               {organizationError && <span className="error-message">{organizationError}</span>}
+            </div>
+         )}
 
          <div className="form-group">
             <label htmlFor="narrators">Narrators</label>

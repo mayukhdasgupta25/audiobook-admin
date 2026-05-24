@@ -58,6 +58,44 @@ export interface TagsResponse {
 }
 
 /**
+ * Organization nested in a user membership response
+ */
+export interface OrganizationItem {
+   id: string;
+   name: string;
+   slug: string;
+   description?: string;
+   createdAt: string;
+   updatedAt: string;
+}
+
+/**
+ * User organization membership from API response
+ */
+export interface UserOrganizationMembership {
+   id: string;
+   userProfileId: string;
+   organizationId: string;
+   role: string;
+   joinedAt: string;
+   createdAt: string;
+   updatedAt: string;
+   organization: OrganizationItem;
+}
+
+/**
+ * API response structure for organizations
+ */
+export interface OrganizationsResponse {
+   success: boolean;
+   data: UserOrganizationMembership[];
+   message: string;
+   statusCode: number;
+   timestamp: string;
+   path: string;
+}
+
+/**
  * Fetches genres from the API
  * @returns Promise resolving to genres response or throwing an error
  */
@@ -83,6 +121,37 @@ export async function getGenres(): Promise<GenreItem[]> {
 
       const genresResponse = data as GenresResponse;
       return genresResponse.data;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Fetches organizations for the current user from the API
+ * @returns Promise resolving to user organization memberships or throwing an error
+ */
+export async function getOrganizations(): Promise<UserOrganizationMembership[]> {
+   try {
+      const headers = getAuthHeaders();
+
+      const response = await fetch(`${getContentApiBaseUrl()}/api/v1/organizations`, {
+         method: 'GET',
+         headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Failed to fetch organizations',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const organizationsResponse = data as OrganizationsResponse;
+      return organizationsResponse.data;
    } catch (error) {
       throw handleApiError(error);
    }
@@ -606,6 +675,7 @@ export async function createAudiobook(
             formData.append('narrators', JSON.stringify(audiobookData.narrators));
          }
          formData.append('description', audiobookData.description);
+         formData.append('organizationId', audiobookData.organizationId);
 
          // Send genreIds as JSON array string
          formData.append('genreIds', JSON.stringify(audiobookData.genreIds));

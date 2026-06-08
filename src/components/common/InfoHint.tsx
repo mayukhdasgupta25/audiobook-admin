@@ -1,20 +1,19 @@
 import '../../styles/components/common/InfoHint.css';
-
 interface InfoHintProps {
-   message: string;
+  message: string;
 }
 
 function InfoHint({ message }: InfoHintProps) {
-   return (
-      <span className="info-hint" tabIndex={0} aria-label={message}>
-         <span className="info-hint-icon" aria-hidden="true">
-            i
-         </span>
-         <span className="info-hint-tooltip" role="tooltip">
-            {message}
-         </span>
+  return (
+    <span className="info-hint" tabIndex={0} aria-label={message}>
+      <span className="info-hint-icon" aria-hidden="true">
+        i
       </span>
-   );
+      <span className="info-hint-tooltip" role="tooltip">
+        {message}
+      </span>
+    </span>
+  );
 }
 
 export default InfoHint;

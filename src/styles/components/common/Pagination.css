@@ -1,61 +1,62 @@
 .pagination {
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   gap: 4px;
-   margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 20px 0;
 }
 
 .pagination-btn {
-   min-width: 40px;
-   height: 40px;
-   padding: 0 12px;
-   border: 1.5px solid var(--color-border);
-   background: white;
-   color: var(--color-text-primary);
-   border-radius: 8px;
-   cursor: pointer;
-   font-size: 14px;
-   font-weight: 600;
-   transition: all var(--transition-base);
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   box-shadow: var(--shadow-xs);
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid var(--color-border);
+  background: white;
+  color: var(--color-text-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-xs);
 }
 
 .pagination-btn:hover:not(:disabled) {
-   background: var(--color-primary-light);
-   border-color: var(--color-primary);
-   color: var(--color-primary);
-   transform: translateY(-2px);
-   box-shadow: var(--shadow-sm);
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .pagination-btn:disabled {
-   opacity: 0.5;
-   cursor: not-allowed;
-   transform: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .pagination-btn.active {
-   background: var(--color-primary-gradient);
-   color: white;
-   border-color: transparent;
-   box-shadow: var(--shadow-colored);
+  background: var(--color-primary-gradient);
+  color: white;
+  border-color: transparent;
+  box-shadow: var(--shadow-colored);
 }
 
 .pagination-btn.active:hover {
-   background: linear-gradient(135deg, #4338CA 0%, #6366F1 100%);
-   transform: translateY(-2px);
-   box-shadow: var(--shadow-colored), 0 6px 20px rgba(79, 70, 229, 0.2);
+  background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-colored),
+    0 6px 20px rgba(79, 70, 229, 0.2);
 }
 
 .pagination-ellipsis {
-   padding: 0 8px;
-   color: #6b7280;
-   display: flex;
-   align-items: center;
-   justify-content: center;
+  padding: 0 8px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-

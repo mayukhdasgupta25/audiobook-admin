@@ -1,7 +1,6 @@
 /**
  * Profile Dropdown component
  */
-
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../hooks/redux';
@@ -9,73 +8,72 @@ import { logout } from '../../utils/api';
 import { clearClientAuthSession } from '../../utils/authSession';
 import { showApiError } from '../../utils/toast';
 import '../../styles/components/common/ProfileDropdown.css';
-
 interface ProfileDropdownProps {
-   isOpen: boolean;
-   onClose: () => void;
-   triggerRef: React.RefObject<HTMLButtonElement>;
+  isOpen: boolean;
+  onClose: () => void;
+  triggerRef: React.RefObject<HTMLButtonElement>;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ isOpen, onClose, triggerRef }) => {
-   const navigate = useNavigate();
-   const dispatch = useAppDispatch();
-   const dropdownRef = useRef<HTMLDivElement>(null);
-
-   useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-         if (
-            dropdownRef.current &&
-            !dropdownRef.current.contains(event.target as Node) &&
-            triggerRef.current &&
-            !triggerRef.current.contains(event.target as Node)
-         ) {
-            onClose();
-         }
-      };
-
-      const handleEscape = (event: KeyboardEvent) => {
-         if (event.key === 'Escape') {
-            onClose();
-         }
-      };
-
-      if (isOpen) {
-         document.addEventListener('mousedown', handleClickOutside);
-         document.addEventListener('keydown', handleEscape);
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+  isOpen,
+  onClose,
+  triggerRef,
+}) => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
+    };
 
-      return () => {
-         document.removeEventListener('mousedown', handleClickOutside);
-         document.removeEventListener('keydown', handleEscape);
-      };
-   }, [isOpen, onClose, triggerRef]);
-
-   const handleLogout = async () => {
-      try {
-         await logout();
-      } catch (error) {
-         showApiError(error);
-      } finally {
-         clearClientAuthSession(dispatch);
-         navigate('/login', { replace: true });
-         onClose();
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
       }
-   };
-
-   if (!isOpen) return null;
-
-   return (
-      <div ref={dropdownRef} className="profile-dropdown">
-         <div className="profile-dropdown-item">
-            <span>Profile Settings</span>
-         </div>
-         <div className="profile-dropdown-divider"></div>
-         <button className="profile-dropdown-item profile-dropdown-logout" onClick={handleLogout}>
-            <span>Logout</span>
-         </button>
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose, triggerRef]);
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      showApiError(error);
+    } finally {
+      clearClientAuthSession(dispatch);
+      navigate('/login', { replace: true });
+      onClose();
+    }
+  };
+  if (!isOpen) return null;
+  return (
+    <div ref={dropdownRef} className="profile-dropdown">
+      <div className="profile-dropdown-item">
+        <span>Profile Settings</span>
       </div>
-   );
+      <div className="profile-dropdown-divider"></div>
+      <button
+        className="profile-dropdown-item profile-dropdown-logout"
+        onClick={handleLogout}
+      >
+        <span>Logout</span>
+      </button>
+    </div>
+  );
 };
 
 export default ProfileDropdown;
-

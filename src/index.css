@@ -1,90 +1,82 @@
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
   /* Modern Theme Colors - Primary */
-  --color-primary: #4F46E5;
-  --color-primary-hover: #4338CA;
-  --color-primary-light: #EEF2FF;
-  --color-primary-gradient: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
-  
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-light: #eef2ff;
+  --color-primary-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   /* Edit Button Color */
-  --color-edit: #EAB308;
-  --color-edit-hover: #CA8A04;
-  --color-edit-light: #FEF9C3;
-  
+  --color-edit: #eab308;
+  --color-edit-hover: #ca8a04;
+  --color-edit-light: #fef9c3;
   /* Accent Colors */
-  --color-success: #10B981;
-  --color-success-light: #D1FAE5;
-  --color-warning: #F59E0B;
-  --color-warning-light: #FEF3C7;
-  --color-danger: #C81E1E;
-  --color-danger-light: #FEE2E2;
-  --color-danger-hover: #991B1B;
-  --color-info: #0EA5E9;
-  --color-info-light: #E0F2FE;
-  --color-edit: #EAB308;
-  --color-edit-hover: #CA8A04;
-  --color-edit-light: #FEF9C3;
-  
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-danger: #c81e1e;
+  --color-danger-light: #fee2e2;
+  --color-danger-hover: #991b1b;
+  --color-info: #0ea5e9;
+  --color-info-light: #e0f2fe;
+  --color-edit: #eab308;
+  --color-edit-hover: #ca8a04;
+  --color-edit-light: #fef9c3;
   /* Secondary Colors */
-  --color-secondary: #64748B;
+  --color-secondary: #64748b;
   --color-secondary-hover: #475569;
-  
   /* Text Colors */
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #64748B;
-  --color-text-tertiary: #94A3B8;
-  
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-tertiary: #94a3b8;
   /* Background Colors */
-  --color-bg-primary: #FFFFFF;
-  --color-bg-secondary: #F8FAFC;
-  --color-bg-tertiary: #F1F5F9;
-  
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
   /* Border Colors */
-  --color-border: #E2E8F0;
-  --color-border-hover: #CBD5E1;
-  
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e1;
   /* Shadow System */
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 4px 6px rgba(15, 23, 42, 0.07), 0 2px 4px rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 10px 15px rgba(15, 23, 42, 0.1), 0 4px 6px rgba(15, 23, 42, 0.05);
-  --shadow-xl: 0 20px 25px rgba(15, 23, 42, 0.1), 0 10px 10px rgba(15, 23, 42, 0.04);
+  --shadow-sm:
+    0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md:
+    0 4px 6px rgba(15, 23, 42, 0.07), 0 2px 4px rgba(15, 23, 42, 0.06);
+  --shadow-lg:
+    0 10px 15px rgba(15, 23, 42, 0.1), 0 4px 6px rgba(15, 23, 42, 0.05);
+  --shadow-xl:
+    0 20px 25px rgba(15, 23, 42, 0.1), 0 10px 10px rgba(15, 23, 42, 0.04);
   --shadow-colored: 0 4px 14px rgba(79, 70, 229, 0.15);
-  
   /* Transitions */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   background-attachment: fixed;
   color: var(--color-text-primary);
 }
-
 #root {
   width: 100%;
   min-height: 100vh;
 }
-
 /* Ensure react-hot-toast close button is visible */
 [data-hot-toast] button[aria-label] {
   opacity: 1 !important;
@@ -103,15 +95,12 @@ body {
   border-radius: 4px !important;
   transition: background-color 0.2s !important;
 }
-
 [data-hot-toast] button[aria-label]:hover {
   background-color: rgba(0, 0, 0, 0.1) !important;
 }
-
 /* Ensure close button icon is visible */
 [data-hot-toast] button[aria-label] svg {
   width: 16px !important;
   height: 16px !important;
   display: block !important;
 }
-

@@ -8,18 +8,18 @@ import type { ApiError } from '../types/auth';
  * @returns The error message string
  */
 function extractErrorMessage(error: ApiError | unknown): string {
-   if (error && typeof error === 'object') {
-      if ('message' in error && typeof error.message === 'string') {
-         return error.message;
-      }
-      if ('error' in error && typeof error.error === 'string') {
-         return error.error;
-      }
-   }
-   if (error instanceof Error) {
+  if (error && typeof error === 'object') {
+    if ('message' in error && typeof error.message === 'string') {
       return error.message;
-   }
-   return 'An unexpected error occurred';
+    }
+    if ('error' in error && typeof error.error === 'string') {
+      return error.error;
+    }
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return 'An unexpected error occurred';
 }
 
 /**
@@ -27,55 +27,58 @@ function extractErrorMessage(error: ApiError | unknown): string {
  * @param error - The API error or unknown error
  * @param duration - Optional duration in milliseconds (default: 5000)
  */
-export function showApiError(error: ApiError | unknown, duration: number = 5000): void {
-   const message = extractErrorMessage(error);
-   toast(
-      (t): React.ReactElement => (
-         <div style={{ position: 'relative', paddingRight: '24px' }}>
-            <span>{message}</span>
-            <button
-               onClick={() => toast.dismiss(t.id)}
-               style={{
-                  position: 'absolute',
-                  top: '-8px',
-                  right: '-8px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#991b1b',
-                  cursor: 'pointer',
-                  padding: '4px 8px',
-                  fontSize: '18px',
-                  lineHeight: '1',
-                  opacity: 0.8,
-                  transition: 'opacity 0.2s',
-               }}
-               onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '1';
-               }}
-               onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '0.8';
-               }}
-               aria-label="Close"
-            >
-               ×
-            </button>
-         </div>
-      ),
-      {
-         duration,
-         position: 'top-right',
-         style: {
-            background: '#fee2e2',
+export function showApiError(
+  error: ApiError | unknown,
+  duration: number = 5000
+): void {
+  const message = extractErrorMessage(error);
+  toast(
+    (t): React.ReactElement => (
+      <div style={{ position: 'relative', paddingRight: '24px' }}>
+        <span>{message}</span>
+        <button
+          onClick={() => toast.dismiss(t.id)}
+          style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '-8px',
+            background: 'transparent',
+            border: 'none',
             color: '#991b1b',
-            border: '1px solid #fca5a5',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            fontSize: '14px',
-            fontWeight: '500',
-         },
-         icon: undefined,
-      }
-   );
+            cursor: 'pointer',
+            padding: '4px 8px',
+            fontSize: '18px',
+            lineHeight: '1',
+            opacity: 0.8,
+            transition: 'opacity 0.2s',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.opacity = '1';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.opacity = '0.8';
+          }}
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+    ),
+    {
+      duration,
+      position: 'top-right',
+      style: {
+        background: '#fee2e2',
+        color: '#991b1b',
+        border: '1px solid #fca5a5',
+        borderRadius: '8px',
+        padding: '12px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+      },
+      icon: undefined,
+    }
+  );
 }
 
 /**
@@ -84,52 +87,51 @@ export function showApiError(error: ApiError | unknown, duration: number = 5000)
  * @param duration - Optional duration in milliseconds (default: 3000)
  */
 export function showSuccess(message: string, duration: number = 3000): void {
-   toast(
-      (t): React.ReactElement => (
-         <div style={{ position: 'relative', paddingRight: '24px' }}>
-            <span>{message}</span>
-            <button
-               onClick={() => toast.dismiss(t.id)}
-               style={{
-                  position: 'absolute',
-                  top: '-8px',
-                  right: '-8px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#166534',
-                  cursor: 'pointer',
-                  padding: '4px 8px',
-                  fontSize: '18px',
-                  lineHeight: '1',
-                  opacity: 0.8,
-                  transition: 'opacity 0.2s',
-               }}
-               onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '1';
-               }}
-               onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '0.8';
-               }}
-               aria-label="Close"
-            >
-               ×
-            </button>
-         </div>
-      ),
-      {
-         duration,
-         position: 'top-right',
-         style: {
-            background: '#dcfce7',
+  toast(
+    (t): React.ReactElement => (
+      <div style={{ position: 'relative', paddingRight: '24px' }}>
+        <span>{message}</span>
+        <button
+          onClick={() => toast.dismiss(t.id)}
+          style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '-8px',
+            background: 'transparent',
+            border: 'none',
             color: '#166534',
-            border: '1px solid #86efac',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            fontSize: '14px',
-            fontWeight: '500',
-         },
-         icon: undefined,
-      }
-   );
+            cursor: 'pointer',
+            padding: '4px 8px',
+            fontSize: '18px',
+            lineHeight: '1',
+            opacity: 0.8,
+            transition: 'opacity 0.2s',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.opacity = '1';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.opacity = '0.8';
+          }}
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+    ),
+    {
+      duration,
+      position: 'top-right',
+      style: {
+        background: '#dcfce7',
+        color: '#166534',
+        border: '1px solid #86efac',
+        borderRadius: '8px',
+        padding: '12px 16px',
+        fontSize: '14px',
+        fontWeight: '500',
+      },
+      icon: undefined,
+    }
+  );
 }
-

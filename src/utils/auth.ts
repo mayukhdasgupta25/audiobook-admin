@@ -4,9 +4,9 @@
  * or we can verify with the server
  */
 export function isAuthenticated(): boolean {
-   // Check if there's an auth flag in sessionStorage
-   // This is set after successful login
-   return sessionStorage.getItem('isAuthenticated') === 'true';
+  // Check if there's an auth flag in sessionStorage
+  // This is set after successful login
+  return sessionStorage.getItem('isAuthenticated') === 'true';
 }
 
 /**
@@ -14,10 +14,9 @@ export function isAuthenticated(): boolean {
  * @param authenticated - Whether the user is authenticated
  */
 export function setAuthenticated(authenticated: boolean): void {
-   if (authenticated) {
-      sessionStorage.setItem('isAuthenticated', 'true');
-   } else {
-      sessionStorage.removeItem('isAuthenticated');
-   }
+  if (authenticated) {
+    sessionStorage.setItem('isAuthenticated', 'true');
+  } else {
+    sessionStorage.removeItem('isAuthenticated');
+  }
 }
-

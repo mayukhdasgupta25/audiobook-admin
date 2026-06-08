@@ -1,3 +1,5 @@
+export type UserRole = 'USER' | 'ADMIN' | 'AUTHOR';
+
 /**
  * Browser device metadata sent with login requests
  */
@@ -23,10 +25,12 @@ export interface LoginRequest {
 export interface LoginResponse {
    token?: string;
    accessToken?: string;
+   role?: UserRole;
    user?: {
       id: string;
       email: string;
       name?: string;
+      role?: UserRole;
    };
    message?: string;
 }
@@ -44,6 +48,7 @@ export interface CsrfTokenResponse {
 export interface RefreshResponse {
    accessToken?: string;
    token?: string;
+   role?: UserRole;
    user?: LoginResponse['user'];
 }
 

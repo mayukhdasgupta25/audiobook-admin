@@ -5,7 +5,12 @@ import { login } from '../../utils/api';
 import { setAuthenticated } from '../../utils/auth';
 import { ensureCsrfToken } from '../../utils/csrf';
 import { getBrowserDeviceInfo } from '../../utils/device';
-import { setAuthenticated as setAuthRedux, setUser } from '../../store/slices/authSlice';
+import {
+   setAuthenticated as setAuthRedux,
+   setUserRole,
+   setUser,
+} from '../../store/slices/authSlice';
+import { getUserRoleFromAuthResponse } from '../../utils/authRole';
 import type { LoginRequest, LoginResponse } from '../../types/auth';
 import { showApiError } from '../../utils/toast';
 import { validateEmail } from '../../utils/validation';
@@ -69,6 +74,11 @@ function Login() {
          // Handle successful login - update both sessionStorage and Redux
          setAuthenticated(true);
          dispatch(setAuthRedux(true));
+
+         const role = getUserRoleFromAuthResponse(loginResponse);
+         if (role) {
+            dispatch(setUserRole(role));
+         }
 
          // Set user info if available in response
          if (loginResponse.user) {

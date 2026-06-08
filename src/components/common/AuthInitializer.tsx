@@ -9,8 +9,10 @@ import { refresh } from '../../utils/api';
 import {
    setAuthenticated as setAuthRedux,
    setAuthInitialized,
+   setUserRole,
    setUser,
 } from '../../store/slices/authSlice';
+import { getUserRoleFromAuthResponse } from '../../utils/authRole';
 import { ensureCsrfToken } from '../../utils/csrf';
 import { removeAccessToken } from '../../utils/token';
 
@@ -25,6 +27,11 @@ async function runAuthInitialization(dispatch: ReturnType<typeof useAppDispatch>
 
          setAuthenticated(true);
          dispatch(setAuthRedux(true));
+
+         const role = getUserRoleFromAuthResponse(refreshResponse);
+         if (role) {
+            dispatch(setUserRole(role));
+         }
 
          if (refreshResponse.user) {
             dispatch(setUser({

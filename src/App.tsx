@@ -1,15 +1,17 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAppSelector } from './hooks/redux';
-import Landing from './pages/landing/Landing';
-import Login from './pages/login/Login';
-import PartnerRegister from './pages/partner/PartnerRegister';
-import Layout from './components/layout/Layout';
-import Audiobooks from './pages/audiobooks/Audiobooks';
-import Chapters from './pages/chapters/Chapters';
-import Dashboard from './pages/dashboard/Dashboard';
-import Management from './pages/management/Management';
-import Inbox from './pages/inbox/Inbox';
 import LoadingSpinner from './components/common/LoadingSpinner';
+
+const Landing = lazy(() => import('./pages/landing/Landing'));
+const Login = lazy(() => import('./pages/login/Login'));
+const PartnerRegister = lazy(() => import('./pages/partner/PartnerRegister'));
+const Layout = lazy(() => import('./components/layout/Layout'));
+const Audiobooks = lazy(() => import('./pages/audiobooks/Audiobooks'));
+const Chapters = lazy(() => import('./pages/chapters/Chapters'));
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Management = lazy(() => import('./pages/management/Management'));
+const Inbox = lazy(() => import('./pages/inbox/Inbox'));
 
 /**
  * Protected Route component
@@ -44,30 +46,48 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/partner/register" element={<PartnerRegister />} />
-        <Route
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/home" element={<Navigate to="/audiobooks" replace />} />
-          <Route path="/audiobooks" element={<Audiobooks />} />
-          <Route path="/audiobooks/:id/chapters" element={<Chapters />} />
+      <Suspense
+        fallback={
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '100vh',
+            }}
+          >
+            <LoadingSpinner />
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/partner/register" element={<PartnerRegister />} />
           <Route
-            path="/analytics"
-            element={<Navigate to="/dashboard" replace />}
-          />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/management" element={<Management />} />
-          <Route path="/inbox" element={<Inbox />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/audiobooks" replace />} />
-      </Routes>
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path="/home"
+              element={<Navigate to="/audiobooks" replace />}
+            />
+            <Route path="/audiobooks" element={<Audiobooks />} />
+            <Route path="/audiobooks/:id/chapters" element={<Chapters />} />
+            <Route
+              path="/analytics"
+              element={<Navigate to="/dashboard" replace />}
+            />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/management" element={<Management />} />
+            <Route path="/inbox" element={<Inbox />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/audiobooks" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

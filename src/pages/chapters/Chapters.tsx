@@ -98,10 +98,8 @@ const Chapters: React.FC = () => {
     chapters.length > 0
       ? [...chapters].sort((a, b) => a.chapterNumber - b.chapterNumber)
       : [];
-  const nextChapterNumber =
-    sortedChapters.length > 0
-      ? sortedChapters[sortedChapters.length - 1].chapterNumber + 1
-      : 1;
+  const lastChapter = sortedChapters.at(-1);
+  const nextChapterNumber = lastChapter ? lastChapter.chapterNumber + 1 : 1;
 
   const handlePageChange = (page: number) => {
     dispatch(setCurrentPage(page));

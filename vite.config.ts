@@ -28,6 +28,41 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) {
+              return;
+            }
+
+            if (
+              id.includes('react-dom') ||
+              id.includes('react-router') ||
+              id.includes('/react/')
+            ) {
+              return 'react-vendor';
+            }
+
+            if (id.includes('@reduxjs') || id.includes('react-redux')) {
+              return 'redux-vendor';
+            }
+
+            if (id.includes('framer-motion')) {
+              return 'motion-vendor';
+            }
+
+            if (id.includes('react-datepicker') || id.includes('date-fns')) {
+              return 'datepicker-vendor';
+            }
+
+            if (id.includes('@dnd-kit')) {
+              return 'dnd-vendor';
+            }
+          },
+        },
+      },
+    },
     test: {
       globals: true,
       environment: 'jsdom',

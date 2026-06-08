@@ -4,7 +4,6 @@
 
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAppName } from '../../utils/config';
 import SearchBar from '../common/SearchBar';
 import ProfileDropdown from '../common/ProfileDropdown';
 import '../../styles/components/layout/TopNavigation.css';
@@ -16,7 +15,6 @@ interface TopNavigationProps {
 
 const TopNavigation: React.FC<TopNavigationProps> = ({ searchValue, onSearchChange }) => {
    const navigate = useNavigate();
-   const appName = getAppName();
    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
    const profileButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -28,7 +26,8 @@ const TopNavigation: React.FC<TopNavigationProps> = ({ searchValue, onSearchChan
       <nav className="top-navigation">
          <div className="top-nav-left">
             <h1 className="top-nav-app-name" onClick={() => navigate('/home')}>
-               {appName}
+               <span className="top-nav-app-name-brand">Srota</span>{' '}
+               <span className="top-nav-app-name-suffix">PARTNER</span>
             </h1>
          </div>
          <div className="top-nav-center">

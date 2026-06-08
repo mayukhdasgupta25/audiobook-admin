@@ -34,6 +34,16 @@
    transform: scale(1.02);
 }
 
+.top-nav-app-name-brand {
+   font-size: 28px;
+}
+
+.top-nav-app-name-suffix {
+   font-size: 11px;
+   font-weight: 700;
+   letter-spacing: 0.04em;
+}
+
 .top-nav-center {
    flex: 1;
    display: flex;
@@ -87,8 +97,12 @@
       padding: 0 12px;
    }
 
-   .top-nav-app-name {
-      font-size: 18px;
+   .top-nav-app-name-brand {
+      font-size: 24px;
+   }
+
+   .top-nav-app-name-suffix {
+      font-size: 10px;
    }
 }
 

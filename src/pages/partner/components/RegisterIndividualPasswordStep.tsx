@@ -1,75 +1,50 @@
 import { FormEvent, useState } from 'react';
-import InfoHint from '../../../components/common/InfoHint';
 import Button from '../../../components/common/Button';
-import { validateEmail } from '../../../utils/validation';
 
-export interface RegisterUserFormData {
-   email: string;
+export interface RegisterIndividualPasswordData {
    password: string;
 }
 
-interface RegisterUserStepProps {
+interface RegisterIndividualPasswordStepProps {
    isLoading: boolean;
-   onSubmit: (data: RegisterUserFormData) => void;
+   onSubmit: (data: RegisterIndividualPasswordData) => void;
    onBack?: () => void;
 }
 
-function RegisterUserStep({ isLoading, onSubmit, onBack }: RegisterUserStepProps) {
-   const [email, setEmail] = useState('');
+function RegisterIndividualPasswordStep({
+   isLoading,
+   onSubmit,
+   onBack,
+}: RegisterIndividualPasswordStepProps) {
    const [password, setPassword] = useState('');
+   const [confirmPassword, setConfirmPassword] = useState('');
    const [error, setError] = useState('');
 
    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setError('');
 
-      if (!validateEmail(email)) {
-         setError('Please enter a valid email address');
-         return;
-      }
-
       if (!password || password.length < 8) {
          setError('Password must be at least 8 characters');
          return;
       }
 
-      onSubmit({
-         email: email.trim(),
-         password,
-      });
+      if (password !== confirmPassword) {
+         setError('Passwords do not match');
+         return;
+      }
+
+      onSubmit({ password });
    };
 
    return (
       <form onSubmit={handleSubmit} className="partner-register-form">
-         <div className="partner-form-group">
-            <label htmlFor="role">Role</label>
-            <input id="role" type="text" value="ADMIN" readOnly disabled={isLoading} />
-         </div>
-
-         <p className="partner-form-section-title">
-            Account details
-            <InfoHint message="You can add more admin members later" />
-         </p>
+         <p className="partner-form-section-title">Create your password</p>
 
          <div className="partner-form-group">
-            <label htmlFor="adminEmail">Email</label>
+            <label htmlFor="individualPassword">Password</label>
             <input
-               id="adminEmail"
-               type="email"
-               value={email}
-               onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError('');
-               }}
-               placeholder="Enter your email"
-               disabled={isLoading}
-            />
-         </div>
-
-         <div className="partner-form-group">
-            <label htmlFor="adminPassword">Password</label>
-            <input
-               id="adminPassword"
+               id="individualPassword"
                type="password"
                value={password}
                onChange={(e) => {
@@ -77,6 +52,21 @@ function RegisterUserStep({ isLoading, onSubmit, onBack }: RegisterUserStepProps
                   setError('');
                }}
                placeholder="Enter your password"
+               disabled={isLoading}
+            />
+         </div>
+
+         <div className="partner-form-group">
+            <label htmlFor="individualConfirmPassword">Confirm password</label>
+            <input
+               id="individualConfirmPassword"
+               type="password"
+               value={confirmPassword}
+               onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setError('');
+               }}
+               placeholder="Confirm your password"
                disabled={isLoading}
             />
          </div>
@@ -102,4 +92,4 @@ function RegisterUserStep({ isLoading, onSubmit, onBack }: RegisterUserStepProps
    );
 }
 
-export default RegisterUserStep;
+export default RegisterIndividualPasswordStep;

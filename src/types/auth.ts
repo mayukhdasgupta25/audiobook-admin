@@ -1,10 +1,20 @@
 /**
+ * Browser device metadata sent with login requests
+ */
+export interface DeviceInfo {
+   deviceId: string;
+   platform: string;
+   userAgent: string;
+}
+
+/**
  * Login request payload structure
  */
 export interface LoginRequest {
    email: string;
    password: string;
    clientType: string;
+   device?: DeviceInfo;
 }
 
 /**
@@ -13,13 +23,28 @@ export interface LoginRequest {
 export interface LoginResponse {
    token?: string;
    accessToken?: string;
-   refreshToken?: string;
    user?: {
       id: string;
       email: string;
       name?: string;
    };
    message?: string;
+}
+
+/**
+ * CSRF token response structure
+ */
+export interface CsrfTokenResponse {
+   csrfToken: string;
+}
+
+/**
+ * Token refresh response structure
+ */
+export interface RefreshResponse {
+   accessToken?: string;
+   token?: string;
+   user?: LoginResponse['user'];
 }
 
 /**
@@ -38,4 +63,3 @@ export interface LogoutResponse {
    message?: string;
    success?: boolean;
 }
-

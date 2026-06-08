@@ -3,9 +3,40 @@ import type {
    LoginResponse,
    ApiError,
    LogoutResponse,
+   RefreshResponse,
 } from '../types/auth';
 import { setAccessToken, removeAccessToken } from './token';
 import { getAuthApiBaseUrl, handleApiError } from './config';
+import { clearCsrfToken, fetchCsrfToken, getCsrfHeaders } from './csrf';
+
+export { fetchCsrfToken };
+
+function storeAccessTokenFromResponse(response: {
+   accessToken?: string;
+   token?: string;
+}): void {
+   if (response.accessToken) {
+      setAccessToken(response.accessToken);
+   } else if (response.token) {
+      setAccessToken(response.token);
+   }
+}
+
+async function authPost(
+   path: string,
+   body?: Record<string, unknown>
+): Promise<Response> {
+   const csrfHeaders = await getCsrfHeaders();
+   return fetch(`${getAuthApiBaseUrl()}${path}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+         'Content-Type': 'application/json',
+         ...csrfHeaders,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+   });
+}
 
 /**
  * Makes a login API call to the authentication endpoint
@@ -16,23 +47,16 @@ export async function login(
    credentials: LoginRequest
 ): Promise<LoginResponse> {
    try {
-      const response = await fetch(`${getAuthApiBaseUrl()}/auth/login`, {
-         method: 'POST',
-         credentials: 'include',
-         headers: {
-            'Content-Type': 'application/json',
-         },
-         body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-            clientType: credentials.clientType,
-            app: "admin"
-         }),
+      const response = await authPost('/auth/login', {
+         email: credentials.email,
+         password: credentials.password,
+         clientType: credentials.clientType,
+         device: credentials.device,
+         app: 'partner',
       });
 
       const data = await response.json();
 
-      // Check if the response is not ok (status code >= 400)
       if (!response.ok) {
          const error: ApiError = {
             message: data.message || data.error || 'Login failed',
@@ -43,16 +67,37 @@ export async function login(
       }
 
       const loginResponse = data as LoginResponse;
-
-      // Store accessToken if provided in response
-      if (loginResponse.accessToken) {
-         setAccessToken(loginResponse.accessToken);
-      } else if (loginResponse.token) {
-         // Fallback to token field if accessToken is not present
-         setAccessToken(loginResponse.token);
-      }
+      storeAccessTokenFromResponse(loginResponse);
 
       return loginResponse;
+   } catch (error) {
+      throw handleApiError(error);
+   }
+}
+
+/**
+ * Refreshes the access token using the httpOnly refreshToken cookie
+ * @returns Promise resolving to refresh response or throwing an error
+ */
+export async function refresh(): Promise<RefreshResponse> {
+   try {
+      const response = await authPost('/auth/refresh');
+
+      const data = await response.json();
+
+      if (!response.ok) {
+         const error: ApiError = {
+            message: data.message || data.error || 'Token refresh failed',
+            error: data.error,
+            statusCode: response.status,
+         };
+         throw error;
+      }
+
+      const refreshResponse = data as RefreshResponse;
+      storeAccessTokenFromResponse(refreshResponse);
+
+      return refreshResponse;
    } catch (error) {
       throw handleApiError(error);
    }
@@ -64,17 +109,10 @@ export async function login(
  */
 export async function logout(): Promise<LogoutResponse> {
    try {
-      const response = await fetch(`${getAuthApiBaseUrl()}/auth/logout`, {
-         method: 'POST',
-         credentials: 'include',
-         headers: {
-            'Content-Type': 'application/json',
-         },
-      });
+      const response = await authPost('/auth/logout');
 
       const data = await response.json();
 
-      // Check if the response is not ok (status code >= 400)
       if (!response.ok) {
          const error: ApiError = {
             message: data.message || data.error || 'Logout failed',
@@ -86,12 +124,11 @@ export async function logout(): Promise<LogoutResponse> {
 
       const logoutResponse = data as LogoutResponse;
 
-      // Remove access token on logout
       removeAccessToken();
+      clearCsrfToken();
 
       return logoutResponse;
    } catch (error) {
       throw handleApiError(error);
    }
 }
-

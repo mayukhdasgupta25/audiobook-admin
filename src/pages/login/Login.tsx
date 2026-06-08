@@ -2,7 +2,9 @@ import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { login } from '../../utils/api';
-import { isAuthenticated, setAuthenticated } from '../../utils/auth';
+import { setAuthenticated } from '../../utils/auth';
+import { ensureCsrfToken } from '../../utils/csrf';
+import { getBrowserDeviceInfo } from '../../utils/device';
 import { setAuthenticated as setAuthRedux, setUser } from '../../store/slices/authSlice';
 import type { LoginRequest, LoginResponse } from '../../types/auth';
 import { showApiError } from '../../utils/toast';
@@ -12,7 +14,7 @@ import '../../styles/pages/login/Login.css';
 function Login() {
    const navigate = useNavigate();
    const dispatch = useAppDispatch();
-   const { isAuthenticated: isAuth } = useAppSelector((state) => state.auth);
+   const { isAuthenticated: isAuth, isInitialized } = useAppSelector((state) => state.auth);
    const [email, setEmail] = useState<string>('');
    const [password, setPassword] = useState<string>('');
    const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -22,10 +24,14 @@ function Login() {
     * Redirect to home if already authenticated
     */
    useEffect(() => {
-      if (isAuthenticated() || isAuth) {
-         navigate('/home', { replace: true });
+      if (!isInitialized) {
+         return;
       }
-   }, [navigate, isAuth]);
+
+      if (isAuth) {
+         navigate('/audiobooks', { replace: true });
+      }
+   }, [navigate, isAuth, isInitialized]);
 
    /**
     * Handles form submission
@@ -49,10 +55,13 @@ function Login() {
       setIsLoading(true);
 
       try {
+         await ensureCsrfToken();
+
          const loginData: LoginRequest = {
             email: email.trim(),
             password: password,
             clientType: 'browser',
+            device: getBrowserDeviceInfo(),
          };
 
          const loginResponse: LoginResponse = await login(loginData);
@@ -73,7 +82,7 @@ function Login() {
             }));
          }
 
-         navigate('/home', { replace: true });
+         navigate('/audiobooks', { replace: true });
 
       } catch (err) {
          showApiError(err);

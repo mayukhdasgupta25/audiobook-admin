@@ -2,6 +2,8 @@ import type { ApiError } from './auth';
 
 export type { ApiError };
 
+export type PartnerType = 'organization' | 'individual';
+
 export interface CreateOrganizationRequest {
    name: string;
 }
@@ -24,7 +26,12 @@ export interface CreateOrganizationResponse {
 export interface RegisterRequest {
    email: string;
    password: string;
-   role: string;
+   role?: string;
+   type?: string;
+   firstName?: string;
+   lastName?: string;
+   address?: string;
+   contact?: string;
 }
 
 export interface RegisterResponse {
@@ -33,9 +40,12 @@ export interface RegisterResponse {
    message?: string;
 }
 
+export type VerifyRegistrationOtpType = 'organization' | 'author';
+
 export interface VerifyRegistrationOtpRequest {
    email: string;
    otp: string;
+   type: VerifyRegistrationOtpType;
    firstName?: string;
    lastName?: string;
 }
@@ -50,6 +60,15 @@ export interface RegisterPartnerUserInput {
    email: string;
    password: string;
    role: string;
+}
+
+export interface RegisterIndividualInput {
+   email: string;
+   password: string;
+   firstName: string;
+   lastName: string;
+   address?: string;
+   contact?: string;
 }
 
 export interface CompletePartnerOrganizationInput {

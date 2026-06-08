@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import InfoHint from '../../../components/common/InfoHint';
 import Button from '../../../components/common/Button';
+import type { PartnerType } from '../../../types/partner';
 
 export interface VerifyOtpFormData {
    firstName: string;
@@ -11,11 +12,18 @@ export interface VerifyOtpFormData {
 interface VerifyOtpStepProps {
    email: string;
    isLoading: boolean;
+   variant?: PartnerType;
    onVerify: (data: VerifyOtpFormData) => void;
    onBack?: () => void;
 }
 
-function VerifyOtpStep({ email, isLoading, onVerify, onBack }: VerifyOtpStepProps) {
+function VerifyOtpStep({
+   email,
+   isLoading,
+   variant = 'organization',
+   onVerify,
+   onBack,
+}: VerifyOtpStepProps) {
    const [firstName, setFirstName] = useState('');
    const [lastName, setLastName] = useState('');
    const [otp, setOtp] = useState('');
@@ -44,41 +52,45 @@ function VerifyOtpStep({ email, isLoading, onVerify, onBack }: VerifyOtpStepProp
             OTP sent to {email}
          </p>
 
-         <div className="partner-form-group">
-            <label htmlFor="firstName">
-               First name
-               <InfoHint message="If not provided, a default name will be added" />
-            </label>
-            <input
-               id="firstName"
-               type="text"
-               value={firstName}
-               onChange={(e) => {
-                  setFirstName(e.target.value);
-                  setError('');
-               }}
-               placeholder="First name (optional)"
-               disabled={isLoading}
-            />
-         </div>
+         {variant === 'organization' && (
+            <>
+               <div className="partner-form-group">
+                  <label htmlFor="firstName">
+                     First name
+                     <InfoHint message="If not provided, a default name will be added" />
+                  </label>
+                  <input
+                     id="firstName"
+                     type="text"
+                     value={firstName}
+                     onChange={(e) => {
+                        setFirstName(e.target.value);
+                        setError('');
+                     }}
+                     placeholder="First name (optional)"
+                     disabled={isLoading}
+                  />
+               </div>
 
-         <div className="partner-form-group">
-            <label htmlFor="lastName">
-               Last name
-               <InfoHint message="If not provided, a default name will be added" />
-            </label>
-            <input
-               id="lastName"
-               type="text"
-               value={lastName}
-               onChange={(e) => {
-                  setLastName(e.target.value);
-                  setError('');
-               }}
-               placeholder="Last name (optional)"
-               disabled={isLoading}
-            />
-         </div>
+               <div className="partner-form-group">
+                  <label htmlFor="lastName">
+                     Last name
+                     <InfoHint message="If not provided, a default name will be added" />
+                  </label>
+                  <input
+                     id="lastName"
+                     type="text"
+                     value={lastName}
+                     onChange={(e) => {
+                        setLastName(e.target.value);
+                        setError('');
+                     }}
+                     placeholder="Last name (optional)"
+                     disabled={isLoading}
+                  />
+               </div>
+            </>
+         )}
 
          <div className="partner-form-group">
             <label htmlFor="otp">Verify OTP</label>

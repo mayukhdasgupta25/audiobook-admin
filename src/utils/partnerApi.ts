@@ -3,6 +3,7 @@ import type {
    CompletePartnerOrganizationInput,
    CreateOrganizationRequest,
    CreateOrganizationResponse,
+   RegisterIndividualInput,
    RegisterPartnerUserInput,
    RegisterRequest,
    RegisterResponse,
@@ -105,6 +106,7 @@ export async function verifyRegistrationOtp(
       const body: VerifyRegistrationOtpRequest = {
          email: payload.email,
          otp: payload.otp,
+         type: payload.type,
       };
 
       if (payload.firstName?.trim()) {
@@ -141,7 +143,7 @@ export async function verifyRegistrationOtp(
 }
 
 /**
- * Step 1: register user with email, password, and role
+ * Registers an organization admin user with email, password, and role
  */
 export async function registerPartnerUser(input: RegisterPartnerUserInput): Promise<string> {
    await registerUser({
@@ -149,6 +151,33 @@ export async function registerPartnerUser(input: RegisterPartnerUserInput): Prom
       password: input.password,
       role: input.role,
    });
+
+   return input.email.trim();
+}
+
+/**
+ * Registers an individual author partner with personal details and type AUTHOR
+ */
+export async function registerIndividualPartner(
+   input: RegisterIndividualInput
+): Promise<string> {
+   const body: RegisterRequest = {
+      email: input.email.trim(),
+      password: input.password,
+      type: 'AUTHOR',
+      firstName: input.firstName.trim(),
+      lastName: input.lastName.trim(),
+   };
+
+   if (input.address?.trim()) {
+      body.address = input.address.trim();
+   }
+
+   if (input.contact?.trim()) {
+      body.contact = input.contact.trim();
+   }
+
+   await registerUser(body);
 
    return input.email.trim();
 }

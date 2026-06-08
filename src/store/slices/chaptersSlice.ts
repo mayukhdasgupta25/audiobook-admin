@@ -8,12 +8,14 @@ import {
   createChapter,
   updateChapter,
   deleteChapter,
-  type ChapterApiResponse,
-  type ChaptersApiResponse,
-  type CreateChapterRequest,
-  type UpdateChapterRequest,
 } from '../../utils/audiobookApi';
-import type { PaginationInfo } from '../../types/audiobook';
+import type {
+  ChapterApiResponse,
+  ChaptersApiResponse,
+  CreateChapterRequest,
+  UpdateChapterRequest,
+  PaginationInfo,
+} from '../../types/audiobook';
 
 interface ChaptersState {
   chapters: ChapterApiResponse[];

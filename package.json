@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "description": "Srota Partner app",
+  "author": "Srota",
+  "license": "MIT",
   "scripts": {
     "dev": "vite --mode development",
     "start:development": "vite --mode development",
@@ -48,6 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "baseline-browser-mapping": "^2.10.35",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",

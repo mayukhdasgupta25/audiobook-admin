@@ -730,7 +730,9 @@ export async function createAudiobook(
         formData.append('narrators', JSON.stringify(audiobookData.narrators));
       }
       formData.append('description', audiobookData.description);
-      formData.append('organizationId', audiobookData.organizationId);
+      if (audiobookData.organizationId) {
+        formData.append('organizationId', audiobookData.organizationId);
+      }
 
       // Send genreIds as JSON array string
       formData.append('genreIds', JSON.stringify(audiobookData.genreIds));

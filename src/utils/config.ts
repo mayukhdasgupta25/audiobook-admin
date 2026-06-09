@@ -31,6 +31,13 @@ export function getAppName(): string {
 }
 
 /**
+ * Whether this build is the partner app (vs. admin/other client types)
+ */
+export function isPartnerApp(): boolean {
+  return env.appType === 'partner';
+}
+
+/**
  * Gets authorization headers with access token
  * @returns Headers object with Authorization header if token exists
  * @throws Error if token is not found

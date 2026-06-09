@@ -118,7 +118,7 @@ export interface CreateAudiobookRequest {
   description: string;
   genreIds: string[];
   tagIds: string[];
-  organizationId: string;
+  organizationId?: string;
   duration: number;
   fileSize: number;
   coverImage?: File;

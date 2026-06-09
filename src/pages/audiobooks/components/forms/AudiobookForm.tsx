@@ -17,6 +17,7 @@ import type {
   AudiobookFormData,
   AudiobookApiResponse,
 } from '../../../../types/audiobook';
+import { isPartnerApp } from '../../../../utils/config';
 import { getOrganizations } from '../../../../utils/audiobookApi';
 import Button from '../../../../components/common/Button';
 import { showApiError } from '../../../../utils/toast';
@@ -44,6 +45,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
     state => state.audiobooks
   );
   const isEditMode = !!audiobookId && !!initialData;
+  const partnerApp = isPartnerApp();
 
   // Initialize form data from initialData if provided
   const getInitialFormData = (): AudiobookFormData => {
@@ -121,9 +123,9 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
     }
   }, [dispatch, genres.length, tags.length]);
 
-  // Fetch organization for create mode
+  // Fetch organization for create mode (non-partner apps only)
   useEffect(() => {
-    if (isEditMode) {
+    if (partnerApp || isEditMode) {
       return;
     }
 
@@ -148,7 +150,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
     };
 
     fetchOrganization();
-  }, [isEditMode]);
+  }, [partnerApp, isEditMode]);
 
   // Update form data when initialData or genres/tags change (for edit mode)
   useEffect(() => {
@@ -220,11 +222,14 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
       newErrors.tags = 'At least one tag is required';
     }
 
-    if (!isEditMode && !organizationId) {
+    if (!partnerApp && !isEditMode && !organizationId) {
       setOrganizationError('Organization is required');
     }
 
-    if (Object.keys(newErrors).length > 0 || (!isEditMode && !organizationId)) {
+    if (
+      Object.keys(newErrors).length > 0 ||
+      (!partnerApp && !isEditMode && !organizationId)
+    ) {
       setErrors(newErrors);
       return;
     }
@@ -292,7 +297,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           description: formData.description.trim(),
           genreIds: formData.genres,
           tagIds: formData.tags,
-          organizationId,
+          ...(partnerApp ? {} : { organizationId }),
           duration: 0,
           fileSize: 0,
           coverImage: formData.coverImage || undefined,
@@ -355,11 +360,14 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
       newErrors.scheduledAt = 'Schedule date and time is required';
     }
 
-    if (!isEditMode && !organizationId) {
+    if (!partnerApp && !isEditMode && !organizationId) {
       setOrganizationError('Organization is required');
     }
 
-    if (Object.keys(newErrors).length > 0 || (!isEditMode && !organizationId)) {
+    if (
+      Object.keys(newErrors).length > 0 ||
+      (!partnerApp && !isEditMode && !organizationId)
+    ) {
       setErrors(newErrors);
       return;
     }
@@ -427,7 +435,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           description: formData.description.trim(),
           genreIds: formData.genres,
           tagIds: formData.tags,
-          organizationId,
+          ...(partnerApp ? {} : { organizationId }),
           duration: 0,
           fileSize: 0,
           coverImage: formData.coverImage || undefined,
@@ -696,7 +704,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
         )}
       </div>
 
-      {!isEditMode && (
+      {!partnerApp && !isEditMode && (
         <div className="form-group">
           <label htmlFor="organization">Organization</label>
           <input

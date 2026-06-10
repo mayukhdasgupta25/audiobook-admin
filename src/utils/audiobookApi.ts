@@ -15,6 +15,7 @@ import {
   getAuthHeadersForFileUpload,
   handleApiError,
 } from './config';
+import { buildAuthorFormData } from './authorFormData';
 import { getAccessToken } from './token';
 
 /**
@@ -538,6 +539,7 @@ export interface CreateAuthorRequest {
   email: string;
   address?: string;
   contact?: string;
+  profileImage?: File;
 }
 
 /**
@@ -591,12 +593,24 @@ export async function createAuthor(
   authorData: CreateAuthorRequest
 ): Promise<AuthorItem> {
   try {
-    const headers = getAuthHeaders();
+    const useMultipart = Boolean(authorData.profileImage);
+    const headers = useMultipart
+      ? getAuthHeadersForFileUpload()
+      : getAuthHeaders();
+    const body = useMultipart
+      ? buildAuthorFormData(authorData)
+      : JSON.stringify({
+          firstName: authorData.firstName,
+          lastName: authorData.lastName,
+          email: authorData.email,
+          address: authorData.address,
+          contact: authorData.contact,
+        });
 
     const response = await fetch(`${getContentApiBaseUrl()}/api/v1/authors/`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(authorData),
+      body,
     });
 
     const data = await response.json();

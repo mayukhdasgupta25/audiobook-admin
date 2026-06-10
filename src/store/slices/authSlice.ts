@@ -5,14 +5,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { UserRole } from '../../types/auth';
 
+export interface AuthUser {
+  email?: string;
+  name?: string;
+  avatarUrl?: string;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   isInitialized: boolean;
   role: UserRole | null;
-  user: {
-    email?: string;
-    name?: string;
-  } | null;
+  user: AuthUser | null;
 }
 
 const initialState: AuthState = {
@@ -39,7 +42,7 @@ const authSlice = createSlice({
     setUserRole: (state, action: PayloadAction<UserRole | null>) => {
       state.role = action.payload;
     },
-    setUser: (state, action: PayloadAction<AuthState['user']>) => {
+    setUser: (state, action: PayloadAction<AuthUser | null>) => {
       state.user = action.payload;
       if (action.payload) {
         state.isAuthenticated = true;

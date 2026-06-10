@@ -17,13 +17,20 @@ import type {
   PaginationInfo,
 } from '../../types/audiobook';
 
+export type AudiobookFilter =
+  | 'all'
+  | 'live'
+  | 'scheduled'
+  | 'drafts'
+  | 'archived';
+
 interface AudiobooksState {
   audiobooks: AudiobookApiResponse[];
   pagination: PaginationInfo | null;
   loading: boolean;
   error: string | null;
   currentPage: number;
-  filter: 'live' | 'scheduled';
+  filter: AudiobookFilter;
   searchQuery: string;
 }
 
@@ -40,10 +47,29 @@ const initialState: AudiobooksState = {
 export const fetchAudiobooks = createAsyncThunk(
   'audiobooks/fetchAudiobooks',
   async (
-    { page = 1, filter }: { page?: number; filter?: 'live' | 'scheduled' },
+    { page = 1, filter }: { page?: number; filter?: AudiobookFilter },
     { rejectWithValue }
   ) => {
     try {
+      if (filter === 'drafts' || filter === 'archived') {
+        return {
+          success: true,
+          data: [],
+          message: '',
+          statusCode: 200,
+          timestamp: new Date().toISOString(),
+          path: '',
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: 0,
+            itemsPerPage: 10,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        } satisfies AudiobooksApiResponse;
+      }
+
       const active = filter === 'live' ? true : undefined;
       const scheduled = filter === 'scheduled' ? true : undefined;
       const response = await getAudiobooks(page, active, scheduled);
@@ -94,7 +120,7 @@ const audiobooksSlice = createSlice({
   name: 'audiobooks',
   initialState,
   reducers: {
-    setFilter: (state, action: PayloadAction<'live' | 'scheduled'>) => {
+    setFilter: (state, action: PayloadAction<AudiobookFilter>) => {
       state.filter = action.payload;
       state.currentPage = 1;
     },

@@ -37,6 +37,9 @@ export function isPartnerApp(): boolean {
   return env.appType === 'partner';
 }
 
+/** Public path to the Srota logo used across the UI and favicon */
+export const SROTA_LOGO_PATH = '/srota_logo.svg';
+
 /**
  * Gets authorization headers with access token
  * @returns Headers object with Authorization header if token exists

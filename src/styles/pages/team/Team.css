@@ -1,0 +1,31 @@
+.team-page {
+  max-width: 1200px;
+  margin: 0;
+  padding: 0;
+}
+
+.team-page h2 {
+  margin: 0 0 24px 0;
+  padding: 0;
+  font-size: 28px;
+  font-weight: 700;
+  background: var(--color-primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.team-page .placeholder-content {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-md);
+}
+
+.team-page .placeholder-content p {
+  font-size: 16px;
+  margin: 0;
+}

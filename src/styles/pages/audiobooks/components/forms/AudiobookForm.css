@@ -3,12 +3,12 @@
   flex-direction: column;
   gap: 20px;
 }
-.form-group {
+.audiobook-form .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.form-group label {
+.audiobook-form .form-group label {
   font-size: 14px;
   font-weight: 500;
   color: #374151;
@@ -35,8 +35,8 @@
   color: #6b7280;
   font-style: italic;
 }
-.form-group input,
-.form-group textarea {
+.audiobook-form .form-group input,
+.audiobook-form .form-group textarea {
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -45,17 +45,17 @@
   transition: all 0.2s;
   background-color: white;
 }
-.form-group input:focus,
-.form-group textarea:focus {
+.audiobook-form .form-group input:focus,
+.audiobook-form .form-group textarea:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
-.form-group input.input-error,
-.form-group textarea.input-error {
+.audiobook-form .form-group input.input-error,
+.audiobook-form .form-group textarea.input-error {
   border-color: #dc2626;
 }
-.form-group textarea {
+.audiobook-form .form-group textarea {
   resize: vertical;
   min-height: 100px;
 }

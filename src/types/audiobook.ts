@@ -92,6 +92,9 @@ export interface AudiobookFormData {
   coverImage: File | null;
   scheduledAt?: string;
   meta: Record<string, string>;
+  isPaid: boolean;
+  minSubscriptionTier: number | null;
+  moodId: string | null;
 }
 
 export type AudiobookWizardData = AudiobookFormData & {
@@ -130,6 +133,9 @@ export interface CreateAudiobookRequest {
   coverImage?: File;
   scheduledAt?: string;
   meta?: Record<string, string>;
+  isPublic?: boolean;
+  minSubscriptionTier?: number;
+  moodId?: string;
 }
 
 /**
@@ -149,6 +155,9 @@ export interface UpdateAudiobookRequest {
   coverImage?: File;
   scheduledAt?: string;
   meta?: Record<string, string>;
+  isPublic?: boolean;
+  minSubscriptionTier?: number;
+  moodId?: string;
 }
 
 export type ChapterWizardData = ChapterFormData & {

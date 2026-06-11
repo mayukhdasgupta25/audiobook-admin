@@ -1,6 +1,7 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { createContext, useContext } from 'react';
 import Button from '../common/Button';
+import WizardScheduleButton from './WizardScheduleButton';
 
 export type WizardMode = 'create' | 'edit';
 
@@ -10,10 +11,13 @@ export interface WizardFormActionsValue {
   showBack: boolean;
   showContinue: boolean;
   showPublishActions: boolean;
+  scheduledAt?: string;
+  scheduleError?: string;
   onBack?: () => void;
   onContinue?: () => void;
   onPublish?: () => void;
   onSchedule?: () => void;
+  onScheduledAtChange?: (scheduledAt: string | undefined) => void;
 }
 
 export const WizardFormActionsContext =
@@ -54,10 +58,14 @@ export function WizardStepActionsBar() {
     showBack,
     showContinue,
     showPublishActions,
+    scheduledAt,
     onBack,
     onPublish,
     onSchedule,
+    onScheduledAtChange,
   } = useWizardFormActions();
+
+  const hasScheduledPublish = Boolean(scheduledAt);
 
   if (!showBack && !showContinue && !showPublishActions) {
     return null;
@@ -68,34 +76,28 @@ export function WizardStepActionsBar() {
       {showBack && onBack && (
         <button
           type="button"
-          className="wizard-back-link"
+          className="wizard-back-btn"
           onClick={onBack}
           disabled={isLoading}
         >
+          <ArrowLeft size={16} aria-hidden="true" />
           Back
         </button>
       )}
       {showContinue && <WizardContinueButton />}
       {showPublishActions && (
         <>
-          {onSchedule && (
-            <Button
-              type="button"
-              variant="warning"
-              onClick={onSchedule}
-              isLoading={isLoading}
-            >
-              Schedule
-            </Button>
-          )}
+          {onSchedule && onScheduledAtChange && <WizardScheduleButton />}
           {onPublish && (
             <Button
               type="button"
-              className="wizard-btn-solid"
+              className="wizard-btn-solid wizard-publish-btn"
               onClick={onPublish}
-              isLoading={isLoading}
+              isLoading={isLoading && !hasScheduledPublish}
+              disabled={isLoading || hasScheduledPublish}
             >
               {mode === 'edit' ? 'Update' : 'Publish'}
+              <ArrowRight size={16} aria-hidden="true" />
             </Button>
           )}
         </>

@@ -88,6 +88,9 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
         scheduledAt: undefined, // Note: scheduledAt may not be in API response
         meta: initialData.meta || {},
         language: initialData.language || DEFAULT_AUDIOBOOK_LANGUAGE,
+        isPaid: false,
+        minSubscriptionTier: null,
+        moodId: null,
       };
     }
     return {
@@ -101,6 +104,9 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
       scheduledAt: undefined,
       meta: {},
       language: DEFAULT_AUDIOBOOK_LANGUAGE,
+      isPaid: false,
+      minSubscriptionTier: null,
+      moodId: null,
     };
   };
 

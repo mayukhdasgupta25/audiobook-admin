@@ -28,6 +28,9 @@ interface WizardShellProps {
   onContinue?: () => void;
   onPublish?: () => void;
   onSchedule?: () => void;
+  scheduledAt?: string;
+  scheduleError?: string;
+  onScheduledAtChange?: (scheduledAt: string | undefined) => void;
   showBack?: boolean;
   showContinue?: boolean;
   showPublishActions?: boolean;
@@ -50,6 +53,9 @@ function WizardShell({
   onContinue,
   onPublish,
   onSchedule,
+  scheduledAt,
+  scheduleError,
+  onScheduledAtChange,
   showBack = false,
   showContinue = false,
   showPublishActions = false,
@@ -64,6 +70,9 @@ function WizardShell({
     onContinue,
     onPublish,
     onSchedule,
+    scheduledAt,
+    scheduleError,
+    onScheduledAtChange,
   };
 
   return (

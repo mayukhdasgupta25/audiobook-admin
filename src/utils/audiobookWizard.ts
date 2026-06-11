@@ -34,6 +34,9 @@ export function createEmptyAudiobookWizardData(): AudiobookWizardData {
     coverImage: null,
     scheduledAt: undefined,
     meta: {},
+    isPaid: false,
+    minSubscriptionTier: null,
+    moodId: null,
     existingCoverUrl: undefined,
   };
 }
@@ -95,6 +98,9 @@ export function hydrateAudiobookWizardData(
     coverImage: null,
     scheduledAt: undefined,
     meta: initialData.meta || {},
+    isPaid: Boolean(initialData.isPublic),
+    minSubscriptionTier: null,
+    moodId: null,
     existingCoverUrl: initialData.coverImage,
   };
 }
@@ -120,6 +126,9 @@ export function validateAudiobookStep(
     }
     if (data.tags.length === 0) {
       errors.tags = 'At least one tag is required';
+    }
+    if (data.isPaid && data.minSubscriptionTier == null) {
+      errors.minSubscriptionTier = 'Please select a subscription plan';
     }
   }
 
@@ -170,6 +179,29 @@ export function validateAudiobookForPublish(
   };
 }
 
+function buildPaidAndMoodFields(data: AudiobookFormData): {
+  isPublic?: boolean;
+  minSubscriptionTier?: number;
+  moodId?: string;
+} {
+  const fields: {
+    isPublic?: boolean;
+    minSubscriptionTier?: number;
+    moodId?: string;
+  } = {};
+
+  if (data.isPaid && data.minSubscriptionTier != null) {
+    fields.isPublic = true;
+    fields.minSubscriptionTier = data.minSubscriptionTier;
+  }
+
+  if (data.moodId) {
+    fields.moodId = data.moodId;
+  }
+
+  return fields;
+}
+
 export function buildCreateAudiobookRequest(
   data: AudiobookFormData,
   organizationId?: string
@@ -193,6 +225,7 @@ export function buildCreateAudiobookRequest(
     coverImage: data.coverImage || undefined,
     scheduledAt: data.scheduledAt,
     meta: Object.keys(filteredMeta).length > 0 ? filteredMeta : undefined,
+    ...buildPaidAndMoodFields(data),
   };
 }
 
@@ -219,5 +252,6 @@ export function buildUpdateAudiobookRequest(
     coverImage: data.coverImage || undefined,
     scheduledAt: data.scheduledAt,
     meta: Object.keys(filteredMeta).length > 0 ? filteredMeta : undefined,
+    ...buildPaidAndMoodFields(data),
   };
 }

@@ -130,6 +130,10 @@
   background-color: #3b82f6;
 }
 
+.audiobook-card-badge-mood {
+  background-color: #8b5cf6;
+}
+
 .audiobook-card-duration {
   margin-top: auto;
   padding-top: 8px;

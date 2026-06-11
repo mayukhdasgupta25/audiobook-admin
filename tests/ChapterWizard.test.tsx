@@ -74,7 +74,7 @@ async function advanceToReviewStep(user: ReturnType<typeof userEvent.setup>) {
   const coverInput = coverInputs[coverInputs.length - 1] as HTMLInputElement;
   await user.upload(coverInput, testCoverFile);
   await user.click(screen.getByRole('button', { name: /continue/i }));
-  await screen.findByText(/schedule this chapter for later/i);
+  await screen.findByRole('button', { name: /^publish$/i });
 }
 
 function mockAudioMetadata() {
@@ -196,7 +196,9 @@ describe('ChapterWizard', () => {
     await advanceToReviewStep(user);
 
     expect(screen.getAllByText('Chapter One').length).toBeGreaterThan(0);
-    await user.click(screen.getByRole('button', { name: /^publish$/i }));
+    await user.click(
+      screen.getByRole('button', { name: /^publish$/i })
+    );
 
     await waitFor(() => {
       expect(createChapterMock).toHaveBeenCalledTimes(1);
@@ -210,19 +212,24 @@ describe('ChapterWizard', () => {
     expect(await screen.findByText('Chapters List')).toBeInTheDocument();
   });
 
-  it('requires schedule date when scheduling from review step', async () => {
+  it('keeps schedule disabled until a date and time are chosen', async () => {
     const user = userEvent.setup();
     renderCreateWizard();
     await advanceToReviewStep(user);
 
-    await user.click(
-      screen.getByRole('checkbox', { name: /schedule this chapter for later/i })
-    );
-    await user.click(screen.getByRole('button', { name: /^schedule$/i }));
+    expect(screen.getByRole('button', { name: /^schedule$/i })).toBeDisabled();
 
-    expect(
-      await screen.findByText(/schedule date and time is required/i)
-    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: /choose schedule date and time/i })
+    );
+    const enabledDays = document.querySelectorAll(
+      '.react-datepicker__day:not(.react-datepicker__day--outside-month):not(.react-datepicker__day--disabled)'
+    );
+    await user.click(enabledDays[enabledDays.length - 1] as HTMLElement);
+    await user.click(screen.getByRole('button', { name: /^done$/i }));
+
+    expect(screen.getByRole('button', { name: /^schedule$/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /^publish$/i })).toBeDisabled();
     expect(createChapterMock).not.toHaveBeenCalled();
   });
 

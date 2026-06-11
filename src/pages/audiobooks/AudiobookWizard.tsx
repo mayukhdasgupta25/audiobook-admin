@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useFilePreviewUrl } from '../../hooks/useFilePreviewUrl';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -18,7 +19,13 @@ import {
   updateAudiobookThunk,
 } from '../../store/slices/audiobooksSlice';
 import type { AudiobookApiResponse, AudiobookWizardData } from '../../types/audiobook';
-import { getOrganizations } from '../../utils/audiobookApi';
+import {
+  getMoods,
+  getOrganizations,
+  getSubscriptionPlans,
+  type MoodItem,
+  type SubscriptionPlanItem,
+} from '../../utils/audiobookApi';
 import { isPartnerApp } from '../../utils/config';
 import { showApiError } from '../../utils/toast';
 import {
@@ -79,10 +86,16 @@ function AudiobookWizard() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof AudiobookWizardData | 'scheduledAt', string>>
   >({});
-  const [scheduleMode, setScheduleMode] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [organizationId, setOrganizationId] = useState('');
   const [organizationError, setOrganizationError] = useState('');
+  const [moods, setMoods] = useState<MoodItem[]>([]);
+  const [moodsLoading, setMoodsLoading] = useState(false);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<
+    SubscriptionPlanItem[]
+  >([]);
+  const [subscriptionPlansLoading, setSubscriptionPlansLoading] =
+    useState(false);
 
   useEffect(() => {
     if (genres.length === 0) {
@@ -122,20 +135,43 @@ function AudiobookWizard() {
     void fetchOrganization();
   }, [partnerApp, mode]);
 
-  const coverPreviewUrl = useMemo(() => {
-    if (data.coverImage) {
-      return URL.createObjectURL(data.coverImage);
-    }
-    return data.existingCoverUrl ?? null;
-  }, [data.coverImage, data.existingCoverUrl]);
-
   useEffect(() => {
-    return () => {
-      if (data.coverImage && coverPreviewUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(coverPreviewUrl);
+    const fetchWizardCatalogData = async () => {
+      setMoodsLoading(true);
+      setSubscriptionPlansLoading(true);
+
+      try {
+        const [moodsResult, plansResult] = await Promise.allSettled([
+          getMoods(),
+          getSubscriptionPlans(),
+        ]);
+
+        if (moodsResult.status === 'fulfilled') {
+          setMoods(moodsResult.value);
+        } else {
+          showApiError(moodsResult.reason);
+        }
+
+        if (plansResult.status === 'fulfilled') {
+          setSubscriptionPlans(plansResult.value);
+        } else {
+          showApiError(plansResult.reason);
+        }
+      } catch (error) {
+        showApiError(error);
+      } finally {
+        setMoodsLoading(false);
+        setSubscriptionPlansLoading(false);
       }
     };
-  }, [data.coverImage, coverPreviewUrl]);
+
+    void fetchWizardCatalogData();
+  }, []);
+
+  const coverPreviewUrl = useFilePreviewUrl(
+    data.coverImage,
+    data.existingCoverUrl
+  );
 
   const updateData = (updates: Partial<AudiobookWizardData>) => {
     setData(prev => ({ ...prev, ...updates }));
@@ -237,6 +273,8 @@ function AudiobookWizard() {
           coverPreviewUrl={coverPreviewUrl}
           genres={genres}
           tags={tags}
+          moods={moods}
+          subscriptionPlans={subscriptionPlans}
         />
       }
       onCancel={() => navigate('/audiobooks')}
@@ -244,11 +282,13 @@ function AudiobookWizard() {
       onBack={step > 1 ? handleBack : undefined}
       onContinue={step < 4 ? handleContinue : undefined}
       onPublish={step === 4 ? () => void submitAudiobook(false) : undefined}
-      onSchedule={
-        step === 4 && scheduleMode
-          ? () => void submitAudiobook(true)
-          : undefined
-      }
+      onSchedule={step === 4 ? () => void submitAudiobook(true) : undefined}
+      scheduledAt={data.scheduledAt}
+      scheduleError={errors.scheduledAt}
+      onScheduledAtChange={scheduledAt => {
+        updateData({ scheduledAt });
+        setErrors(prev => ({ ...prev, scheduledAt: undefined }));
+      }}
       showBack={step > 1}
       showContinue={step < 4}
       showPublishActions={step === 4}
@@ -263,8 +303,12 @@ function AudiobookWizard() {
           errors={errors}
           genres={genres}
           tags={tags}
+          moods={moods}
+          subscriptionPlans={subscriptionPlans}
           genresLoading={genresLoading}
           tagsLoading={tagsLoading}
+          moodsLoading={moodsLoading}
+          subscriptionPlansLoading={subscriptionPlansLoading}
           isLoading={loading}
           onChange={updateData}
         />
@@ -288,12 +332,13 @@ function AudiobookWizard() {
       {step === 4 && (
         <ReviewPublishStep
           data={data}
-          errors={errors}
           genres={genres}
           tags={tags}
-          scheduleMode={scheduleMode}
-          onScheduleModeChange={setScheduleMode}
-          onChange={updateData}
+          moods={moods}
+          onNavigateToStep={targetStep => {
+            setErrors({});
+            setStep(targetStep);
+          }}
         />
       )}
     </WizardShell>

@@ -1,5 +1,6 @@
-import { ChangeEvent, DragEvent, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, useId, useRef, useState } from 'react';
 import { CloudUpload, X } from 'lucide-react';
+import { useFilePreviewUrl } from '../../hooks/useFilePreviewUrl';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
@@ -11,6 +12,19 @@ interface ImageUploadZoneProps {
   previewUrl?: string | null;
   compact?: boolean;
   showPreview?: boolean;
+  ariaLabel?: string;
+}
+
+function isAcceptedImage(file: File): boolean {
+  if (ACCEPTED_TYPES.includes(file.type)) {
+    return true;
+  }
+
+  if (!file.type && /\.(jpe?g|png|webp)$/i.test(file.name)) {
+    return true;
+  }
+
+  return false;
 }
 
 function ImageUploadZone({
@@ -20,7 +34,9 @@ function ImageUploadZone({
   previewUrl,
   compact = false,
   showPreview = true,
+  ariaLabel = 'Upload image',
 }: ImageUploadZoneProps) {
+  const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
@@ -31,7 +47,7 @@ function ImageUploadZone({
       onChange(null);
       return;
     }
-    if (!ACCEPTED_TYPES.includes(file.type)) {
+    if (!isAcceptedImage(file)) {
       setError('Please upload a JPG, PNG, or WebP image');
       return;
     }
@@ -45,9 +61,10 @@ function ImageUploadZone({
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     validateAndSet(file);
+    event.target.value = '';
   };
 
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
     event.preventDefault();
     setDragOver(false);
     if (disabled) {
@@ -57,9 +74,10 @@ function ImageUploadZone({
     validateAndSet(file);
   };
 
-  const objectPreview = showPreview
-    ? previewUrl ?? (value ? URL.createObjectURL(value) : null)
-    : null;
+  const localPreviewUrl = useFilePreviewUrl(
+    showPreview && !previewUrl ? value : null
+  );
+  const objectPreview = showPreview ? (previewUrl ?? localPreviewUrl) : null;
 
   const clearFile = () => {
     onChange(null);
@@ -70,7 +88,8 @@ function ImageUploadZone({
 
   return (
     <div className={`image-upload-zone${compact ? ' image-upload-zone--compact' : ''}`}>
-      <div
+      <label
+        htmlFor={inputId}
         className={`image-upload-dropzone${compact ? ' image-upload-dropzone--compact' : ''}${dragOver ? ' image-upload-dropzone--active' : ''}`}
         onDragOver={event => {
           event.preventDefault();
@@ -80,16 +99,7 @@ function ImageUploadZone({
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        onClick={() => !disabled && inputRef.current?.click()}
-        onKeyDown={event => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-label="Upload organization logo"
+        aria-label={ariaLabel}
       >
         <CloudUpload size={compact ? 22 : 28} className="image-upload-icon" />
         <p className="image-upload-text">
@@ -109,15 +119,15 @@ function ImageUploadZone({
           <p className="image-upload-hint">Recommended: Square JPG, PNG (512×512)</p>
         )}
         <input
+          id={inputId}
           ref={inputRef}
           type="file"
           accept={ACCEPTED_TYPES.join(',')}
           className="image-upload-input"
           onChange={handleFileChange}
           disabled={disabled}
-          tabIndex={-1}
         />
-      </div>
+      </label>
 
       {objectPreview && (
         <div className="image-upload-preview">

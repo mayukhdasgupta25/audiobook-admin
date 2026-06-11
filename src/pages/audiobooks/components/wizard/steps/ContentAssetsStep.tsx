@@ -25,6 +25,7 @@ function ContentAssetsStep({
           onChange={coverImage => onChange({ coverImage })}
           disabled={isLoading}
           showPreview={false}
+          ariaLabel="Upload cover image"
         />
         {errors.coverImage && (
           <span className="wizard-field-error">{errors.coverImage}</span>

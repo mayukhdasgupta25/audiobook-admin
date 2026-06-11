@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createAudiobook,
+  getMoods,
+  getSubscriptionPlans,
   updateAudiobook,
-  type GenreItem,
 } from '../src/utils/audiobookApi';
 
 vi.mock('../src/utils/config', () => ({
@@ -13,6 +14,7 @@ vi.mock('../src/utils/config', () => ({
   getAuthHeadersForFileUpload: vi.fn(() => ({
     Authorization: 'Bearer test-token',
   })),
+  getAuthApiBaseUrl: vi.fn(() => 'https://auth.example.com'),
   getContentApiBaseUrl: vi.fn(() => 'https://api.example.com'),
   handleApiError: vi.fn((error: unknown) => error),
 }));
@@ -114,5 +116,190 @@ describe('audiobook API language payloads', () => {
     const formData = (request as RequestInit).body as FormData;
     expect(formData.get('language')).toBe('French');
     expect(formData.get('audiobookId')).toBe('ab-1');
+  });
+});
+
+describe('audiobook API catalog endpoints', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('fetches subscription plans from auth API', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: [{ name: 'Base Plan' }, { name: 'Standard Plan' }],
+      }),
+    } as Response);
+
+    const plans = await getSubscriptionPlans();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://auth.example.com/auth/subscription-plans/',
+      expect.objectContaining({ method: 'GET' })
+    );
+    expect(plans).toHaveLength(2);
+    expect(plans[0].name).toBe('Base Plan');
+  });
+
+  it('fetches moods from content API', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: [
+          {
+            id: 'mood-1',
+            name: 'Calm',
+            hexcode: '#38BDF8',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            updatedAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
+      }),
+    } as Response);
+
+    const moods = await getMoods();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/api/v1/moods',
+      expect.objectContaining({ method: 'GET' })
+    );
+    expect(moods[0].name).toBe('Calm');
+    expect(moods[0].color).toBe('#38BDF8');
+  });
+
+  it('returns an empty array when subscription plans response has no data array', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    } as Response);
+
+    const plans = await getSubscriptionPlans();
+    expect(plans).toEqual([]);
+  });
+
+  it('parses nested subscription plan payloads and tier fields', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          plans: [
+            { planName: 'Base', minSubscriptionTier: 1 },
+            { title: 'Standard', tier: 2 },
+            { label: 'Premium Plan', level: '3' },
+          ],
+        },
+      }),
+    } as Response);
+
+    const plans = await getSubscriptionPlans();
+
+    expect(plans).toEqual([
+      { id: undefined, name: 'Base', minSubscriptionTier: 1 },
+      { id: undefined, name: 'Standard', minSubscriptionTier: 2 },
+      { id: undefined, name: 'Premium Plan', minSubscriptionTier: 3 },
+    ]);
+  });
+
+  it('parses moods from a top-level array response', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: 'mood-calm',
+          name: 'Calm',
+          hexcode: '#38BDF8',
+          createdAt: '2026-06-11T17:35:55.418Z',
+          updatedAt: '2026-06-11T17:35:55.432Z',
+        },
+      ],
+    } as Response);
+
+    const moods = await getMoods();
+
+    expect(moods).toEqual([
+      {
+        id: 'mood-calm',
+        name: 'Calm',
+        color: '#38BDF8',
+        createdAt: '2026-06-11T17:35:55.418Z',
+        updatedAt: '2026-06-11T17:35:55.432Z',
+      },
+    ]);
+  });
+
+  it('returns an empty array when moods response has no data array', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    } as Response);
+
+    const moods = await getMoods();
+    expect(moods).toEqual([]);
+  });
+});
+
+describe('audiobook API paid and mood payloads', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('includes paid and mood fields in JSON create payload', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { id: 'ab-1', title: 'Test Audiobook' },
+      }),
+    } as Response);
+
+    await createAudiobook({
+      ...baseCreatePayload,
+      isPublic: true,
+      minSubscriptionTier: 2,
+      moodId: 'mood-1',
+    });
+
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse((request as RequestInit).body as string);
+    expect(body.isPublic).toBe(true);
+    expect(body.minSubscriptionTier).toBe(2);
+    expect(body.moodId).toBe('mood-1');
+  });
+
+  it('includes paid and mood fields in FormData create payload', async () => {
+    const coverImage = new File(['cover'], 'cover.png', { type: 'image/png' });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { id: 'ab-2', title: 'Test Audiobook' },
+      }),
+    } as Response);
+
+    await createAudiobook({
+      ...baseCreatePayload,
+      coverImage,
+      isPublic: true,
+      minSubscriptionTier: 3,
+      moodId: 'mood-2',
+    });
+
+    const [, request] = fetchMock.mock.calls[0];
+    const formData = (request as RequestInit).body as FormData;
+    expect(formData.get('isPublic')).toBe('true');
+    expect(formData.get('minSubscriptionTier')).toBe('3');
+    expect(formData.get('moodId')).toBe('mood-2');
   });
 });

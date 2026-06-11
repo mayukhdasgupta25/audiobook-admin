@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useFilePreviewUrl } from '../../hooks/useFilePreviewUrl';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -82,7 +83,6 @@ function ChapterWizard() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof ChapterWizardData | 'scheduledAt', string>>
   >({});
-  const [scheduleMode, setScheduleMode] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
 
@@ -98,20 +98,10 @@ function ChapterWizard() {
     }
   }, [mode, editingChapter]);
 
-  const coverPreviewUrl = useMemo(() => {
-    if (data.coverImage) {
-      return URL.createObjectURL(data.coverImage);
-    }
-    return data.existingCoverUrl ?? null;
-  }, [data.coverImage, data.existingCoverUrl]);
-
-  useEffect(() => {
-    return () => {
-      if (data.coverImage && coverPreviewUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(coverPreviewUrl);
-      }
-    };
-  }, [data.coverImage, coverPreviewUrl]);
+  const coverPreviewUrl = useFilePreviewUrl(
+    data.coverImage,
+    data.existingCoverUrl
+  );
 
   const updateData = (updates: Partial<ChapterWizardData>) => {
     setData(prev => ({ ...prev, ...updates }));
@@ -248,11 +238,13 @@ function ChapterWizard() {
       onBack={step > 1 ? handleBack : undefined}
       onContinue={step < 4 ? handleContinue : undefined}
       onPublish={step === 4 ? () => void submitChapter(false) : undefined}
-      onSchedule={
-        step === 4 && scheduleMode
-          ? () => void submitChapter(true)
-          : undefined
-      }
+      onSchedule={step === 4 ? () => void submitChapter(true) : undefined}
+      scheduledAt={data.scheduledAt}
+      scheduleError={errors.scheduledAt}
+      onScheduledAtChange={scheduledAt => {
+        updateData({ scheduledAt });
+        setErrors(prev => ({ ...prev, scheduledAt: undefined }));
+      }}
       showBack={step > 1}
       showContinue={step < 4}
       showPublishActions={step === 4}
@@ -285,13 +277,7 @@ function ChapterWizard() {
         />
       )}
       {step === 4 && (
-        <ChapterReviewPublishStep
-          data={data}
-          errors={errors}
-          scheduleMode={scheduleMode}
-          onScheduleModeChange={setScheduleMode}
-          onChange={updateData}
-        />
+        <ChapterReviewPublishStep data={data} />
       )}
     </WizardShell>
   );

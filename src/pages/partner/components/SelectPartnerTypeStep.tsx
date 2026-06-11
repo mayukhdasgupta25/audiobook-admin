@@ -1,77 +1,104 @@
-import type { KeyboardEvent } from 'react';
+import { useState } from 'react';
+import { ArrowRight, Building2, Check, PenLine, Star } from 'lucide-react';
 import type { PartnerType } from '../../../types/partner';
-
-interface PartnerTypeOption {
-  type: PartnerType;
-  label: string;
-  description: string;
-  icon: string;
-}
-
-const PARTNER_TYPE_OPTIONS: PartnerTypeOption[] = [
-  {
-    type: 'organization',
-    label: 'Organization',
-    description: 'Register as a company or team with admin access',
-    icon: '🏢',
-  },
-  {
-    type: 'individual',
-    label: 'Individual',
-    description: 'Register as an independent author',
-    icon: '✍️',
-  },
-];
+import Button from '../../../components/common/Button';
+import InfoBanner from '../../../components/common/InfoBanner';
 
 interface SelectPartnerTypeStepProps {
   isLoading: boolean;
-  onSelect: (type: PartnerType) => void;
+  initialType?: PartnerType | null;
+  onContinue: (type: PartnerType) => void;
+  onBack?: () => void;
 }
 
 function SelectPartnerTypeStep({
   isLoading,
-  onSelect,
+  initialType = null,
+  onContinue,
+  onBack,
 }: SelectPartnerTypeStepProps) {
-  const handleKeyDown = (
-    event: KeyboardEvent<HTMLDivElement>,
-    type: PartnerType
-  ): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      if (!isLoading) {
-        onSelect(type);
-      }
-    }
-  };
+  const [selectedType, setSelectedType] = useState<PartnerType | null>(
+    initialType
+  );
 
   return (
     <div className="partner-type-step">
-      <p className="partner-form-section-title">Who are you?</p>
+      <p className="partner-step-intro">
+        Choose the type of partner account you want to create.
+      </p>
 
       <div className="partner-type-grid">
-        {PARTNER_TYPE_OPTIONS.map(option => (
-          <div
-            key={option.type}
-            role="button"
-            tabIndex={isLoading ? -1 : 0}
-            className="partner-type-card"
-            aria-label={`Register as ${option.label}`}
-            onClick={() => {
-              if (!isLoading) {
-                onSelect(option.type);
-              }
-            }}
-            onKeyDown={event => handleKeyDown(event, option.type)}
+        <button
+          type="button"
+          className={`partner-type-card${
+            selectedType === 'organization' ? ' partner-type-card--selected' : ''
+          }`}
+          onClick={() => setSelectedType('organization')}
+          disabled={isLoading}
+        >
+          {selectedType === 'organization' && (
+            <span className="partner-type-check" aria-hidden="true">
+              <Check size={16} />
+            </span>
+          )}
+          <span className="partner-type-illustration partner-type-illustration--org">
+            <Building2 size={32} />
+          </span>
+          <span className="partner-type-label">Organization</span>
+          <span className="partner-type-description">
+            Register a company, publisher, or team with admin access.
+          </span>
+          <span className="partner-type-badge form-highlight-surface">
+            <Star size={12} />
+            Recommended for teams
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`partner-type-card${
+            selectedType === 'individual' ? ' partner-type-card--selected' : ''
+          }`}
+          onClick={() => setSelectedType('individual')}
+          disabled={isLoading}
+        >
+          {selectedType === 'individual' && (
+            <span className="partner-type-check" aria-hidden="true">
+              <Check size={16} />
+            </span>
+          )}
+          <span className="partner-type-illustration partner-type-illustration--individual">
+            <PenLine size={32} />
+          </span>
+          <span className="partner-type-label">Individual</span>
+          <span className="partner-type-description">
+            Register as an independent author or creator.
+          </span>
+        </button>
+      </div>
+
+      <InfoBanner>You can invite teammates later from your dashboard.</InfoBanner>
+
+      <div className="partner-wizard-footer">
+        {onBack && (
+          <button
+            type="button"
+            className="partner-back-link"
+            onClick={onBack}
+            disabled={isLoading}
           >
-            <span className="partner-type-icon" aria-hidden="true">
-              {option.icon}
-            </span>
-            <span className="partner-type-label">{option.label}</span>
-            <span className="partner-type-description">
-              {option.description}
-            </span>
-          </div>
-        ))}
+            Back
+          </button>
+        )}
+        <Button
+          type="button"
+          className="partner-continue-btn"
+          disabled={!selectedType || isLoading}
+          onClick={() => selectedType && onContinue(selectedType)}
+        >
+          Continue
+          <ArrowRight size={16} aria-hidden="true" />
+        </Button>
       </div>
     </div>
   );

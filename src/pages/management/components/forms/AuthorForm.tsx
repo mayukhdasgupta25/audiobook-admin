@@ -4,6 +4,7 @@
 
 import React, { useState, FormEvent, useEffect } from 'react';
 import Button from '../../../../components/common/Button';
+import ImageUploadZone from '../../../../components/common/ImageUploadZone';
 import '../../../../styles/pages/management/components/forms/AuthorForm.css';
 
 interface AuthorFormData {
@@ -12,10 +13,11 @@ interface AuthorFormData {
   email: string;
   address: string;
   contact: string;
+  profileImage: File | null;
 }
 
 interface AuthorFormProps {
-  initialData?: AuthorFormData;
+  initialData?: Omit<AuthorFormData, 'profileImage'>;
   onSubmit: (data: AuthorFormData) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
@@ -27,13 +29,15 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<AuthorFormData>({
+  const [formData, setFormData] = useState({
     firstName: initialData?.firstName || '',
     lastName: initialData?.lastName || '',
     email: initialData?.email || '',
     address: initialData?.address || '',
     contact: initialData?.contact || '',
   });
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const isEditing = Boolean(initialData);
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof AuthorFormData, string>>
@@ -49,6 +53,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
         contact: initialData.contact || '',
       });
     }
+    setProfileImage(null);
     setErrors({});
   }, [initialData]);
 
@@ -115,6 +120,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
         email: trimmedEmail,
         address: formData.address.trim() || '',
         contact: formData.contact.trim() || '',
+        profileImage,
       });
     } catch (err) {
       // Error handling is done in parent component
@@ -219,6 +225,18 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
         />
         {errors.contact && <span className="form-error">{errors.contact}</span>}
       </div>
+
+      {!isEditing && (
+        <div className="form-group">
+          <label className="form-label">Profile image</label>
+          <ImageUploadZone
+            value={profileImage}
+            onChange={setProfileImage}
+            disabled={isLoading}
+            compact
+          />
+        </div>
+      )}
 
       <div className="form-actions">
         <Button

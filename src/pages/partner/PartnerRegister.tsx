@@ -1,249 +1,902 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../../hooks/redux';
-import {
-  registerPartnerUser,
-  registerIndividualPartner,
-  verifyRegistrationOtp,
-  completePartnerOrganizationSetup,
-} from '../../utils/partnerApi';
-import { endSessionAndRedirectToLogin } from '../../utils/authSession';
-import { showApiError } from '../../utils/toast';
-import type { PartnerType } from '../../types/partner';
-import SelectPartnerTypeStep from './components/SelectPartnerTypeStep';
-import RegisterUserStep, {
-  type RegisterUserFormData,
-} from './components/RegisterUserStep';
-import RegisterIndividualDetailsStep, {
-  type RegisterIndividualDetailsData,
-} from './components/RegisterIndividualDetailsStep';
-import RegisterIndividualPasswordStep, {
-  type RegisterIndividualPasswordData,
-} from './components/RegisterIndividualPasswordStep';
-import VerifyOtpStep, {
-  type VerifyOtpFormData,
-} from './components/VerifyOtpStep';
-import RegisterOrganizationStep, {
-  type RegisterOrganizationFormData,
-} from './components/RegisterOrganizationStep';
-import '../../styles/pages/partner/PartnerRegister.css';
-const ADMIN_ROLE = 'ADMIN';
-const ORGANIZATION_SUBTITLES: Record<1 | 2 | 3 | 4, string> = {
-  1: 'Who are you?',
-  2: 'Create your account',
-  3: 'Verify your account',
-  4: 'Register your organization',
-};
+import { useEffect, useMemo, useState } from 'react';
 
-const INDIVIDUAL_SUBTITLES: Record<1 | 2 | 3 | 4, string> = {
-  1: 'Who are you?',
-  2: 'Your personal details',
-  3: 'Create your password',
-  4: 'Verify your account',
-};
+import { useNavigate } from 'react-router-dom';
+
+import { ArrowRight } from 'lucide-react';
+
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+
+import {
+
+  registerPartnerUser,
+
+  registerIndividualPartner,
+
+  fetchUserProfileWithRetry,
+
+  verifyRegistrationOtp,
+
+  completePartnerOrganizationSetup,
+
+} from '../../utils/partnerApi';
+
+import { endSessionAndRedirectToLogin } from '../../utils/authSession';
+
+import { showApiError } from '../../utils/toast';
+
+import type { PartnerType } from '../../types/partner';
+
+import {
+
+  resetPartnerRegistration,
+
+  setIndividualDetails,
+
+  setIndividualPassword,
+
+  setOrganizationAccount,
+
+  setOrganizationProfile,
+
+  setPartnerType,
+
+  setRegisteredEmail,
+
+  setUserProfileId,
+
+  setIsOtpVerified,
+
+  setStep,
+
+} from '../../store/slices/partnerRegistrationSlice';
+
+import Logo from '../../components/common/Logo';
+
+import PartnerRegisterMarketingPanel from './components/PartnerRegisterMarketingPanel';
+
+import PartnerWizardStepper from './components/PartnerWizardStepper';
+
+import SelectPartnerTypeStep from './components/SelectPartnerTypeStep';
+
+import RegisterUserStep, {
+
+  type RegisterUserFormData,
+
+} from './components/RegisterUserStep';
+
+import RegisterIndividualDetailsStep, {
+
+  type RegisterIndividualDetailsData,
+
+} from './components/RegisterIndividualDetailsStep';
+
+import RegisterIndividualPasswordStep, {
+
+  type RegisterIndividualPasswordData,
+
+} from './components/RegisterIndividualPasswordStep';
+
+import VerifyOtpStep, {
+
+  type VerifyOtpFormData,
+
+} from './components/VerifyOtpStep';
+
+import RegisterOrganizationStep, {
+
+  type RegisterOrganizationFormData,
+
+} from './components/RegisterOrganizationStep';
+
+import '../../styles/shared/marketing.css';
+
+import '../../styles/pages/partner/PartnerRegister.css';
+
+
+
+const ADMIN_ROLE = 'ADMIN';
+
+
 
 function PartnerRegister() {
+
   const navigate = useNavigate();
+
   const dispatch = useAppDispatch();
-  const [partnerType, setPartnerType] = useState<PartnerType | null>(null);
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [email, setEmail] = useState('');
-  const [individualDetails, setIndividualDetails] =
-    useState<RegisterIndividualDetailsData | null>(null);
+
+  const {
+
+    partnerType,
+
+    step,
+
+    organizationAccount,
+
+    organizationProfile,
+
+    individualDetails,
+
+    individualPassword,
+
+    registeredEmail,
+
+    userProfileId,
+
+    isOtpVerified,
+
+  } = useAppSelector(state => state.partnerRegistration);
+
   const [isLoading, setIsLoading] = useState(false);
+
+
+
+  useEffect(() => {
+
+    const html = document.documentElement;
+
+    const { body } = document;
+
+    const prevHtmlOverflow = html.style.overflow;
+
+    const prevBodyOverflow = body.style.overflow;
+
+
+
+    html.style.overflow = 'hidden';
+
+    body.style.overflow = 'hidden';
+
+
+
+    return () => {
+
+      html.style.overflow = prevHtmlOverflow;
+
+      body.style.overflow = prevBodyOverflow;
+
+    };
+
+  }, []);
+
+
+
+  const organizationLogoPreview = useMemo(() => {
+
+    if (!organizationProfile.image) {
+
+      return null;
+
+    }
+
+    return URL.createObjectURL(organizationProfile.image);
+
+  }, [organizationProfile.image]);
+
+
+
+  useEffect(() => {
+
+    return () => {
+
+      if (organizationLogoPreview) {
+
+        URL.revokeObjectURL(organizationLogoPreview);
+
+      }
+
+    };
+
+  }, [organizationLogoPreview]);
+
+
+
+  const individualPhotoPreview = useMemo(() => {
+
+    if (!individualDetails.image) {
+
+      return null;
+
+    }
+
+    return URL.createObjectURL(individualDetails.image);
+
+  }, [individualDetails.image]);
+
+
+
+  useEffect(() => {
+
+    return () => {
+
+      if (individualPhotoPreview) {
+
+        URL.revokeObjectURL(individualPhotoPreview);
+
+      }
+
+    };
+
+  }, [individualPhotoPreview]);
+
+
+
+  useEffect(() => {
+
+    if (
+
+      step !== 4 ||
+
+      partnerType !== 'organization' ||
+
+      !isOtpVerified ||
+
+      userProfileId
+
+    ) {
+
+      return;
+
+    }
+
+
+
+    const fetchProfile = async () => {
+
+      setIsLoading(true);
+
+      try {
+
+        const profile = await fetchUserProfileWithRetry(3);
+
+        dispatch(setUserProfileId(profile.id));
+
+      } catch (err) {
+
+        showApiError(err);
+
+        dispatch(setStep(3));
+
+      } finally {
+
+        setIsLoading(false);
+
+      }
+
+    };
+
+
+
+    void fetchProfile();
+
+  }, [step, partnerType, isOtpVerified, userProfileId, dispatch]);
+
+
+
   const resetToPartnerTypeSelection = () => {
-    setPartnerType(null);
-    setIndividualDetails(null);
-    setEmail('');
-    setStep(1);
+
+    dispatch(resetPartnerRegistration());
+
   };
+
+
 
   const handleSelectPartnerType = (type: PartnerType) => {
-    setPartnerType(type);
-    setStep(2);
+
+    dispatch(setPartnerType(type));
+
+    dispatch(setStep(2));
+
   };
 
-  const handleOrganizationAccountSubmit = async (
-    data: RegisterUserFormData
-  ) => {
-    setIsLoading(true);
-    try {
-      const registeredEmail = await registerPartnerUser({
+
+
+  const handleOrganizationAccountSubmit = async (data: RegisterUserFormData) => {
+
+    dispatch(
+
+      setOrganizationAccount({
+
         email: data.email,
+
         password: data.password,
-        role: ADMIN_ROLE,
-      });
-      setEmail(registeredEmail);
-      setStep(3);
-    } catch (err) {
-      showApiError(err);
-    } finally {
-      setIsLoading(false);
+
+        address: data.address,
+
+        contact: data.contact,
+
+        acceptedTerms: data.acceptedTerms,
+
+      })
+
+    );
+
+
+
+    if (registeredEmail) {
+
+      dispatch(setStep(3));
+
+      return;
+
     }
+
+
+
+    setIsLoading(true);
+
+    try {
+
+      const email = await registerPartnerUser({
+
+        email: data.email,
+
+        password: data.password,
+
+        role: ADMIN_ROLE,
+
+        address: data.address || undefined,
+
+        contact: data.contact || undefined,
+
+      });
+
+      dispatch(setRegisteredEmail(email));
+
+      dispatch(setStep(3));
+
+    } catch (err) {
+
+      showApiError(err);
+
+    } finally {
+
+      setIsLoading(false);
+
+    }
+
   };
+
+
+
+  const handleOrganizationProfileSubmit = async (
+
+    data: RegisterOrganizationFormData
+
+  ) => {
+
+    dispatch(
+
+      setOrganizationProfile({
+
+        organizationName: data.organizationName,
+
+        websiteUrl: data.websiteUrl,
+
+        teamSize: data.teamSize,
+
+        preferredGenreId: data.preferredGenreId,
+
+        image: data.image,
+
+      })
+
+    );
+
+
+
+    if (!userProfileId) {
+
+      showApiError({
+
+        message: 'User profile is missing. Please go back and verify your email.',
+
+      });
+
+      return;
+
+    }
+
+
+
+    setIsLoading(true);
+
+    try {
+
+      await completePartnerOrganizationSetup({
+
+        organizationName: data.organizationName,
+
+        websiteUrl: data.websiteUrl || undefined,
+
+        teamSize: data.teamSize,
+
+        preferredGenreId: data.preferredGenreId,
+
+        image: data.image ?? undefined,
+
+        userProfileId,
+
+      });
+
+      await endSessionAndRedirectToLogin(dispatch, navigate);
+
+      dispatch(resetPartnerRegistration());
+
+    } catch (err) {
+
+      showApiError(err);
+
+    } finally {
+
+      setIsLoading(false);
+
+    }
+
+  };
+
+
 
   const handleIndividualDetailsSubmit = (
+
     data: RegisterIndividualDetailsData
+
   ) => {
-    setIndividualDetails(data);
-    setStep(3);
+
+    dispatch(setIndividualDetails(data));
+
+    dispatch(setStep(3));
+
   };
+
+
 
   const handleIndividualPasswordSubmit = async (
+
     data: RegisterIndividualPasswordData
+
   ) => {
-    if (!individualDetails) {
+
+    dispatch(setIndividualPassword(data));
+
+
+
+    if (registeredEmail) {
+
+      dispatch(setStep(4));
+
       return;
+
     }
+
+
+
     setIsLoading(true);
+
     try {
-      const registeredEmail = await registerIndividualPartner({
+
+      const email = await registerIndividualPartner({
+
         email: individualDetails.email,
+
         password: data.password,
+
         firstName: individualDetails.firstName,
+
         lastName: individualDetails.lastName,
+
         address: individualDetails.address || undefined,
+
         contact: individualDetails.contact || undefined,
+
+        profileImage: individualDetails.image ?? undefined,
+
       });
-      setEmail(registeredEmail);
-      setStep(4);
+
+      dispatch(setRegisteredEmail(email));
+
+      dispatch(setStep(4));
+
     } catch (err) {
+
       showApiError(err);
+
     } finally {
+
       setIsLoading(false);
+
     }
+
   };
+
+
+
+  const handleIndividualPasswordSaveDraft = (
+
+    data: RegisterIndividualPasswordData
+
+  ) => {
+
+    dispatch(setIndividualPassword(data));
+
+  };
+
+
 
   const handleVerifyOtp = async (data: VerifyOtpFormData) => {
+
     setIsLoading(true);
+
     try {
-      await verifyRegistrationOtp({
-        email,
-        otp: data.otp,
-        type: partnerType === 'individual' ? 'author' : 'organization',
-        firstName:
-          partnerType === 'organization'
-            ? data.firstName || undefined
-            : undefined,
-        lastName:
-          partnerType === 'organization'
-            ? data.lastName || undefined
-            : undefined,
-      });
-      if (partnerType === 'individual') {
-        await endSessionAndRedirectToLogin(
-          dispatch,
-          navigate,
-          'Registration complete. Please sign in.'
-        );
+
+      if (partnerType === 'organization' && isOtpVerified) {
+
+        dispatch(setStep(4));
+
         return;
+
       }
-      setStep(4);
-    } catch (err) {
-      showApiError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleCreateOrganization = async (
-    data: RegisterOrganizationFormData
-  ) => {
-    setIsLoading(true);
-    try {
-      await completePartnerOrganizationSetup({
-        organizationName: data.organizationName,
+
+
+      if (partnerType === 'individual' && isOtpVerified) {
+
+        await endSessionAndRedirectToLogin(
+
+          dispatch,
+
+          navigate,
+
+          'Registration complete. Please sign in.'
+
+        );
+
+        dispatch(resetPartnerRegistration());
+
+        return;
+
+      }
+
+
+
+      await verifyRegistrationOtp({
+
+        email: registeredEmail,
+
+        otp: data.otp,
+
+        type: partnerType === 'individual' ? 'author' : 'organization',
+
       });
-      await endSessionAndRedirectToLogin(dispatch, navigate);
+
+
+
+      if (partnerType === 'individual') {
+
+        dispatch(setIsOtpVerified(true));
+
+        await endSessionAndRedirectToLogin(
+
+          dispatch,
+
+          navigate,
+
+          'Registration complete. Please sign in.'
+
+        );
+
+        dispatch(resetPartnerRegistration());
+
+        return;
+
+      }
+
+
+
+      dispatch(setIsOtpVerified(true));
+
+      dispatch(setStep(4));
+
     } catch (err) {
+
       showApiError(err);
+
+    } finally {
+
       setIsLoading(false);
+
     }
+
   };
 
-  const stepSubtitle =
-    partnerType === 'individual'
-      ? INDIVIDUAL_SUBTITLES[step]
-      : partnerType === 'organization'
-        ? ORGANIZATION_SUBTITLES[step]
-        : ORGANIZATION_SUBTITLES[1];
+
+
+  const handleEditEmail = () => {
+
+    dispatch(setRegisteredEmail(''));
+
+    dispatch(setUserProfileId(''));
+
+    dispatch(setIsOtpVerified(false));
+
+    dispatch(setStep(2));
+
+  };
+
+
+
+  const combinedLoading = isLoading;
+
+  const displayStep =
+
+    partnerType === 'individual' && step > 1 ? step - 1 : step;
+
+  const totalSteps = partnerType === 'individual' ? 3 : 4;
+
+  const individualFullName = `${individualDetails.firstName} ${individualDetails.lastName}`.trim();
+
+
+
   return (
-    <div className="partner-register-container">
-      <div className="partner-register-card">
-        <h1 className="partner-register-title">Become a Partner</h1>
-        <div
-          className="partner-progress"
-          role="progressbar"
-          aria-valuenow={step}
-          aria-valuemin={1}
-          aria-valuemax={4}
-          aria-label={`Registration progress, step ${step} of 4`}
-        >
-          {[1, 2, 3, 4].map(segment => (
-            <div
-              key={segment}
-              className={`partner-progress-segment${
-                segment <= step ? ' partner-progress-segment--active' : ''
-              }`}
-            />
-          ))}
+
+    <div className="partner-register-page">
+
+      <header className="partner-register-header">
+
+        <Logo to="/" />
+
+        <div className="partner-register-header-auth">
+
+          <span className="partner-register-header-prompt">
+
+            Already a Partner?
+
+          </span>
+
+          <button
+
+            type="button"
+
+            className="partner-register-signin-btn"
+
+            onClick={() => navigate('/login')}
+
+          >
+
+            Sign in
+
+            <ArrowRight size={16} />
+
+          </button>
+
         </div>
-        <p className="partner-register-subtitle">{stepSubtitle}</p>
-        {step === 1 && (
-          <SelectPartnerTypeStep
-            isLoading={isLoading}
-            onSelect={handleSelectPartnerType}
-          />
-        )}
-        {step === 2 && partnerType === 'organization' && (
-          <RegisterUserStep
-            isLoading={isLoading}
-            onSubmit={handleOrganizationAccountSubmit}
-            onBack={resetToPartnerTypeSelection}
-          />
-        )}
-        {step === 2 && partnerType === 'individual' && (
-          <RegisterIndividualDetailsStep
-            isLoading={isLoading}
-            onSubmit={handleIndividualDetailsSubmit}
-            onBack={resetToPartnerTypeSelection}
-          />
-        )}
-        {step === 3 && partnerType === 'organization' && (
-          <VerifyOtpStep
-            email={email}
-            isLoading={isLoading}
-            variant="organization"
-            onVerify={handleVerifyOtp}
-            onBack={() => setStep(2)}
-          />
-        )}
-        {step === 3 && partnerType === 'individual' && (
-          <RegisterIndividualPasswordStep
-            isLoading={isLoading}
-            onSubmit={handleIndividualPasswordSubmit}
-            onBack={() => setStep(2)}
-          />
-        )}
-        {step === 4 && partnerType === 'organization' && (
-          <RegisterOrganizationStep
-            isLoading={isLoading}
-            onSubmit={handleCreateOrganization}
-            onBack={() => setStep(3)}
-          />
-        )}
-        {step === 4 && partnerType === 'individual' && (
-          <VerifyOtpStep
-            email={email}
-            isLoading={isLoading}
-            variant="individual"
-            onVerify={handleVerifyOtp}
-            onBack={() => setStep(3)}
-          />
-        )}
+
+      </header>
+
+
+
+      <div className="partner-register-body">
+
+        <PartnerRegisterMarketingPanel partnerType={partnerType} />
+
+
+
+        <section
+
+          className={`partner-register-wizard${
+
+            step === 4 && partnerType === 'organization'
+
+              ? ' partner-register-wizard--organization'
+
+              : ''
+
+          }`}
+
+        >
+
+          <div
+
+            className={`partner-register-card marketing-card${
+
+              step === 4 && partnerType === 'organization'
+
+                ? ' partner-register-card--organization'
+
+                : ''
+
+            }`}
+
+          >
+
+            <div className="partner-register-card-header">
+
+              <h1 className="partner-register-title">Become a Partner</h1>
+
+              {step > 1 && (
+
+                <span className="partner-register-step-label">
+
+                  <span className="partner-register-step-highlight">
+
+                    Step {displayStep}
+
+                  </span>{' '}
+
+                  of {totalSteps}
+
+                </span>
+
+              )}
+
+            </div>
+
+
+
+            <PartnerWizardStepper step={step} partnerType={partnerType} />
+
+
+
+            {step === 1 && (
+
+              <SelectPartnerTypeStep
+
+                isLoading={combinedLoading}
+
+                initialType={partnerType}
+
+                onContinue={handleSelectPartnerType}
+
+              />
+
+            )}
+
+
+
+            {step === 2 && partnerType === 'organization' && (
+
+              <RegisterUserStep
+
+                isLoading={combinedLoading}
+
+                initialData={organizationAccount}
+
+                onSubmit={handleOrganizationAccountSubmit}
+
+                onBack={resetToPartnerTypeSelection}
+
+              />
+
+            )}
+
+
+
+            {step === 2 && partnerType === 'individual' && (
+
+              <RegisterIndividualDetailsStep
+
+                isLoading={combinedLoading}
+
+                initialData={individualDetails}
+
+                onSubmit={handleIndividualDetailsSubmit}
+
+                onBack={draft => {
+
+                  dispatch(setIndividualDetails(draft));
+
+                  dispatch(setStep(1));
+
+                }}
+
+              />
+
+            )}
+
+
+
+            {step === 3 && partnerType === 'organization' && (
+
+              <VerifyOtpStep
+
+                email={registeredEmail}
+
+                isLoading={combinedLoading}
+
+                variant="organization"
+
+                onVerify={handleVerifyOtp}
+
+                onBack={() => dispatch(setStep(2))}
+
+                onEditEmail={handleEditEmail}
+
+              />
+
+            )}
+
+
+
+            {step === 3 && partnerType === 'individual' && (
+
+              <RegisterIndividualPasswordStep
+
+                isLoading={combinedLoading}
+
+                initialData={individualPassword}
+
+                onSubmit={handleIndividualPasswordSubmit}
+
+                onSaveDraft={handleIndividualPasswordSaveDraft}
+
+                onBack={() => dispatch(setStep(2))}
+
+              />
+
+            )}
+
+
+
+            {step === 4 && partnerType === 'organization' && (
+
+              <RegisterOrganizationStep
+
+                isLoading={combinedLoading}
+
+                initialData={organizationProfile}
+
+                onSubmit={handleOrganizationProfileSubmit}
+
+                onBack={draft => {
+
+                  dispatch(setOrganizationProfile(draft));
+
+                  dispatch(setStep(3));
+
+                }}
+
+              />
+
+            )}
+
+
+
+            {step === 4 && partnerType === 'individual' && (
+
+              <VerifyOtpStep
+
+                email={registeredEmail || individualDetails.email}
+
+                isLoading={combinedLoading}
+
+                variant="individual"
+
+                fullName={individualFullName}
+
+                photoPreviewUrl={individualPhotoPreview}
+
+                onVerify={handleVerifyOtp}
+
+                onBack={() => dispatch(setStep(3))}
+
+                onEditEmail={handleEditEmail}
+
+              />
+
+            )}
+
+          </div>
+
+        </section>
+
       </div>
+
     </div>
+
   );
+
 }
 
+
+
 export default PartnerRegister;
+

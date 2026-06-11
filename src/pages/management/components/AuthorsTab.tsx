@@ -73,6 +73,7 @@ const AuthorsTab: React.FC = () => {
     email: string;
     address: string;
     contact: string;
+    profileImage: File | null;
   }) => {
     setIsSubmitting(true);
     try {
@@ -98,6 +99,7 @@ const AuthorsTab: React.FC = () => {
             email: formData.email,
             address: formData.address || undefined,
             contact: formData.contact || undefined,
+            profileImage: formData.profileImage ?? undefined,
           })
         ).unwrap();
         showSuccess('Author created successfully');

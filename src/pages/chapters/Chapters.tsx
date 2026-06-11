@@ -30,10 +30,8 @@ import {
 import type { ChapterApiResponse } from '../../types/audiobook';
 import ChapterCard from './components/ChapterCard';
 import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Pagination from '../../components/common/Pagination';
-import ChapterForm from './components/forms/ChapterForm';
 import { showApiError } from '../../utils/toast';
 import '../../styles/pages/chapters/Chapters.css';
 
@@ -45,10 +43,6 @@ const Chapters: React.FC = () => {
     state => state.chapters
   );
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingChapter, setEditingChapter] =
-    useState<ChapterApiResponse | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingChapter, setDeletingChapter] =
     useState<ChapterApiResponse | null>(null);
@@ -93,14 +87,6 @@ const Chapters: React.FC = () => {
     originalOrderRef.current = sorted;
   }, [chapters]);
 
-  // Calculate next chapter number - use sorted copy to avoid mutation
-  const sortedChapters =
-    chapters.length > 0
-      ? [...chapters].sort((a, b) => a.chapterNumber - b.chapterNumber)
-      : [];
-  const lastChapter = sortedChapters.at(-1);
-  const nextChapterNumber = lastChapter ? lastChapter.chapterNumber + 1 : 1;
-
   const handlePageChange = (page: number) => {
     dispatch(setCurrentPage(page));
     if (id) {
@@ -108,25 +94,10 @@ const Chapters: React.FC = () => {
     }
   };
 
-  const handleCreateSuccess = () => {
-    setIsCreateModalOpen(false);
-    if (id) {
-      // Refresh chapters list - fetch without page to get current page
-      dispatch(fetchChapters({ audiobookId: id, page: currentPage }));
-    }
-  };
-
   const handleEdit = (chapter: ChapterApiResponse) => {
-    setEditingChapter(chapter);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditSuccess = () => {
-    setIsEditModalOpen(false);
-    setEditingChapter(null);
-    if (id) {
-      dispatch(fetchChapters({ audiobookId: id, page: currentPage }));
-    }
+    navigate(`/audiobooks/${id}/chapters/${chapter.id}/edit`, {
+      state: { chapter },
+    });
   };
 
   const handleDelete = (chapter: ChapterApiResponse) => {
@@ -385,7 +356,7 @@ const Chapters: React.FC = () => {
         </Button>
         <div className="chapters-header-right">
           <h2>Chapters</h2>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Button onClick={() => navigate(`/audiobooks/${id}/chapters/create`)}>
             Create Chapter
           </Button>
         </div>
@@ -436,44 +407,6 @@ const Chapters: React.FC = () => {
           )}
         </>
       )}
-
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Create New Chapter"
-        size="large"
-      >
-        <ChapterForm
-          audiobookId={id}
-          nextChapterNumber={nextChapterNumber}
-          onSuccess={handleCreateSuccess}
-          onCancel={() => setIsCreateModalOpen(false)}
-        />
-      </Modal>
-
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingChapter(null);
-        }}
-        title="Edit Chapter"
-        size="large"
-      >
-        {editingChapter && (
-          <ChapterForm
-            audiobookId={id}
-            nextChapterNumber={editingChapter.chapterNumber}
-            chapterId={editingChapter.id}
-            initialData={editingChapter}
-            onSuccess={handleEditSuccess}
-            onCancel={() => {
-              setIsEditModalOpen(false);
-              setEditingChapter(null);
-            }}
-          />
-        )}
-      </Modal>
 
       <ConfirmDialog
         isOpen={isDeleteModalOpen}

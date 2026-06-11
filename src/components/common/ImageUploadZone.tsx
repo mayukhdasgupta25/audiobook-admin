@@ -10,6 +10,7 @@ interface ImageUploadZoneProps {
   disabled?: boolean;
   previewUrl?: string | null;
   compact?: boolean;
+  showPreview?: boolean;
 }
 
 function ImageUploadZone({
@@ -18,6 +19,7 @@ function ImageUploadZone({
   disabled = false,
   previewUrl,
   compact = false,
+  showPreview = true,
 }: ImageUploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -55,8 +57,16 @@ function ImageUploadZone({
     validateAndSet(file);
   };
 
-  const objectPreview =
-    previewUrl ?? (value ? URL.createObjectURL(value) : null);
+  const objectPreview = showPreview
+    ? previewUrl ?? (value ? URL.createObjectURL(value) : null)
+    : null;
+
+  const clearFile = () => {
+    onChange(null);
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
 
   return (
     <div className={`image-upload-zone${compact ? ' image-upload-zone--compact' : ''}`}>
@@ -111,16 +121,31 @@ function ImageUploadZone({
 
       {objectPreview && (
         <div className="image-upload-preview">
-          <img src={objectPreview} alt="Logo preview" />
+          <img src={objectPreview} alt="Uploaded image preview" />
           <button
             type="button"
             className="image-upload-remove"
             onClick={event => {
               event.stopPropagation();
-              onChange(null);
-              if (inputRef.current) {
-                inputRef.current.value = '';
-              }
+              clearFile();
+            }}
+            disabled={disabled}
+            aria-label="Remove image"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {!showPreview && value && (
+        <div className="image-upload-selected">
+          <span className="image-upload-selected-name">{value.name}</span>
+          <button
+            type="button"
+            className="image-upload-selected-remove"
+            onClick={event => {
+              event.stopPropagation();
+              clearFile();
             }}
             disabled={disabled}
             aria-label="Remove image"

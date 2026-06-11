@@ -744,6 +744,9 @@ export async function createAudiobook(
         formData.append('narrators', JSON.stringify(audiobookData.narrators));
       }
       formData.append('description', audiobookData.description);
+      if (audiobookData.language) {
+        formData.append('language', audiobookData.language);
+      }
       if (audiobookData.organizationId) {
         formData.append('organizationId', audiobookData.organizationId);
       }
@@ -899,6 +902,9 @@ export async function updateAudiobook(
       }
       if (audiobookData.description !== undefined) {
         formData.append('description', audiobookData.description);
+      }
+      if (audiobookData.language !== undefined) {
+        formData.append('language', audiobookData.language);
       }
       if (
         audiobookData.genreIds !== undefined &&

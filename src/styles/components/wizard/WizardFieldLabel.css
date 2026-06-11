@@ -1,0 +1,25 @@
+.wizard-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.wizard-field-label-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary-muted);
+  flex-shrink: 0;
+}
+
+.wizard-field-label-icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}

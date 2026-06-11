@@ -35,11 +35,11 @@ export async function completeIndividualSecurityStep(
 ) {
   await user.type(
     document.getElementById('individualPassword') as HTMLInputElement,
-    'Secure1pass'
+    'Secure1pass!'
   );
   await user.type(
     document.getElementById('individualConfirmPassword') as HTMLInputElement,
-    'Secure1pass'
+    'Secure1pass!'
   );
   await user.click(screen.getByRole('checkbox'));
   await user.click(screen.getByRole('button', { name: /^continue$/i }));

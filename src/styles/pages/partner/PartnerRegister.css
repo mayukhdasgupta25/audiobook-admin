@@ -529,57 +529,42 @@
   text-decoration: underline;
 }
 
-.password-strength {
+.password-requirements {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 4px;
 }
 
-.password-strength-bar {
-  display: flex;
+.password-requirement-pill {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-}
-
-.password-strength-segment {
-  flex: 1;
-  height: 4px;
+  padding: 5px 10px;
   border-radius: 999px;
-  background: var(--color-bg-tertiary);
-}
-
-.password-strength-segment--active {
-  background: var(--color-success);
-}
-
-.password-strength-label {
+  border: 1px dashed var(--color-border);
   font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
 }
 
-.password-strength-checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  list-style: none;
+.password-requirement-pill--met {
+  border: 1px solid var(--color-success);
+  background: var(--color-success);
+  color: #ffffff;
 }
 
-.password-strength-checks li {
+.password-requirement-pill__icon {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px dashed var(--color-border);
-  font-size: 0.6875rem;
-  background: var(--color-bg-primary);
-  color: var(--color-text-tertiary);
-}
-
-.password-strength-check--pass {
-  border-color: var(--color-success);
-  background: var(--color-success-light);
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
   color: var(--color-success);
+  flex-shrink: 0;
 }
 
 .pill-selector {

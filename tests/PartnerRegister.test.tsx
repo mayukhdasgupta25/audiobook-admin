@@ -83,11 +83,11 @@ async function completeOrganizationAccountStep(
 
   await user.type(screen.getByLabelText(/work email/i), 'admin@acme.com');
 
-  await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass');
+  await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass!');
 
   await user.type(
     document.getElementById('adminConfirmPassword') as HTMLInputElement,
-    'Secure1pass'
+    'Secure1pass!'
   );
 
   await user.type(screen.getByLabelText(/^address/i), address);
@@ -224,11 +224,11 @@ describe('PartnerRegister organization flow', () => {
 
     await user.type(screen.getByLabelText(/work email/i), 'admin@acme.com');
 
-    await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass');
+    await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass!');
 
     await user.type(
     document.getElementById('adminConfirmPassword') as HTMLInputElement,
-    'Secure1pass'
+    'Secure1pass!'
   );
 
     await user.click(screen.getByRole('checkbox'));
@@ -275,7 +275,7 @@ describe('PartnerRegister organization flow', () => {
 
     await user.type(screen.getByLabelText(/work email/i), 'admin@acme.com');
 
-    await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass');
+    await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass!');
 
     await user.type(
       document.getElementById('adminConfirmPassword') as HTMLInputElement,
@@ -324,11 +324,11 @@ describe('PartnerRegister organization flow', () => {
 
     await user.type(screen.getByLabelText(/work email/i), 'admin@acme.com');
 
-    await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass');
+    await user.type(screen.getByLabelText(/^password$/i), 'Secure1pass!');
 
     await user.type(
     document.getElementById('adminConfirmPassword') as HTMLInputElement,
-    'Secure1pass'
+    'Secure1pass!'
   );
 
     await user.type(screen.getByLabelText(/^address/i), '123 Publisher Lane');
@@ -413,7 +413,7 @@ describe('PartnerRegister organization flow', () => {
 
         email: 'admin@acme.com',
 
-        password: 'Secure1pass',
+        password: 'Secure1pass!',
 
         role: 'ADMIN',
 
@@ -563,7 +563,7 @@ describe('PartnerRegister organization flow', () => {
 
         email: 'admin@acme.com',
 
-        password: 'Secure1pass',
+        password: 'Secure1pass!',
 
         role: 'ADMIN',
 
@@ -613,7 +613,7 @@ describe('PartnerRegister organization flow', () => {
 
     expect(screen.getByLabelText(/work email/i)).toHaveValue('admin@acme.com');
 
-    expect(screen.getByLabelText(/^password$/i)).toHaveValue('Secure1pass');
+    expect(screen.getByLabelText(/^password$/i)).toHaveValue('Secure1pass!');
 
     expect(screen.getByLabelText(/^address/i)).toHaveValue('123 Publisher Lane');
 
@@ -671,7 +671,9 @@ describe('PartnerRegister organization flow', () => {
 
     );
 
-    expect(screen.getByRole('img', { name: /logo preview/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: /uploaded image preview/i })
+    ).toBeInTheDocument();
 
   });
 
@@ -707,7 +709,7 @@ describe('PartnerRegister organization flow', () => {
 
     await user.type(
       document.getElementById('adminConfirmPassword') as HTMLInputElement,
-      'Secure1pass'
+      'Secure1pass!'
     );
 
     await user.click(screen.getByRole('button', { name: /continue/i }));
@@ -814,7 +816,7 @@ describe('PartnerRegister individual flow', () => {
 
         email: 'author@example.com',
 
-        password: 'Secure1pass',
+        password: 'Secure1pass!',
 
         firstName: 'Jane',
 
@@ -868,7 +870,7 @@ describe('PartnerRegister individual flow', () => {
 
         email: 'author@example.com',
 
-        password: 'Secure1pass',
+        password: 'Secure1pass!',
 
         firstName: 'Jane',
 
@@ -932,11 +934,11 @@ describe('PartnerRegister individual flow', () => {
 
     await user.type(
       document.getElementById('individualPassword') as HTMLInputElement,
-      'Secure1pass'
+      'Secure1pass!'
     );
     await user.type(
       document.getElementById('individualConfirmPassword') as HTMLInputElement,
-      'Secure1pass'
+      'Secure1pass!'
     );
     await user.click(screen.getByRole('button', { name: /^continue$/i }));
 

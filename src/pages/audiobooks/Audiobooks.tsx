@@ -23,10 +23,8 @@ import PerformanceSnapshotWidget from './components/widgets/PerformanceSnapshotW
 import QuickActionsWidget from './components/widgets/QuickActionsWidget';
 import RecentActivityWidget from './components/widgets/RecentActivityWidget';
 import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Pagination from '../../components/common/Pagination';
-import AudiobookForm from './components/forms/AudiobookForm';
 import { showApiError } from '../../utils/toast';
 import '../../styles/pages/audiobooks/Audiobooks.css';
 
@@ -44,10 +42,6 @@ const Audiobooks: React.FC = () => {
   const { audiobooks, pagination, loading, filter, searchQuery, currentPage } =
     useAppSelector(state => state.audiobooks);
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingAudiobook, setEditingAudiobook] =
-    useState<AudiobookApiResponse | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingAudiobook, setDeletingAudiobook] =
     useState<AudiobookApiResponse | null>(null);
@@ -99,20 +93,8 @@ const Audiobooks: React.FC = () => {
     dispatch(setCurrentPage(page));
   };
 
-  const handleCreateSuccess = () => {
-    setIsCreateModalOpen(false);
-    dispatch(fetchAudiobooks({ page: 1, filter }));
-  };
-
   const handleEdit = (audiobook: AudiobookApiResponse) => {
-    setEditingAudiobook(audiobook);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditSuccess = () => {
-    setIsEditModalOpen(false);
-    setEditingAudiobook(null);
-    dispatch(fetchAudiobooks({ page: currentPage, filter }));
+    navigate(`/audiobooks/${audiobook.id}/edit`, { state: { audiobook } });
   };
 
   const handleDelete = (audiobook: AudiobookApiResponse) => {
@@ -174,7 +156,7 @@ const Audiobooks: React.FC = () => {
                 <Upload size={16} className="btn-icon-left" />
                 Import Catalog
               </Button>
-              <Button onClick={() => setIsCreateModalOpen(true)}>
+              <Button onClick={() => navigate('/audiobooks/create')}>
                 <Plus size={16} className="btn-icon-left" />
                 Create Audiobook
               </Button>
@@ -312,46 +294,10 @@ const Audiobooks: React.FC = () => {
         <aside className="audiobooks-sidebar">
           <UpcomingReleasesWidget />
           <PerformanceSnapshotWidget />
-          <QuickActionsWidget
-            onCreateAudiobook={() => setIsCreateModalOpen(true)}
-          />
+          <QuickActionsWidget />
           <RecentActivityWidget />
         </aside>
       </div>
-
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Create New Audiobook"
-        size="large"
-      >
-        <AudiobookForm
-          onSuccess={handleCreateSuccess}
-          onCancel={() => setIsCreateModalOpen(false)}
-        />
-      </Modal>
-
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingAudiobook(null);
-        }}
-        title="Edit Audiobook"
-        size="large"
-      >
-        {editingAudiobook && (
-          <AudiobookForm
-            audiobookId={editingAudiobook.id}
-            initialData={editingAudiobook}
-            onSuccess={handleEditSuccess}
-            onCancel={() => {
-              setIsEditModalOpen(false);
-              setEditingAudiobook(null);
-            }}
-          />
-        )}
-      </Modal>
 
       <ConfirmDialog
         isOpen={isDeleteModalOpen}

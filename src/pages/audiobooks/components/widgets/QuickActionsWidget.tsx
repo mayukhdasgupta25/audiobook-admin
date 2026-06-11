@@ -8,16 +8,20 @@ import { useNavigate } from 'react-router-dom';
 import SolidIcon from '../../../../components/common/SolidIcon';
 import '../../../../styles/pages/audiobooks/components/widgets/Widgets.css';
 
-interface QuickActionsWidgetProps {
-  onCreateAudiobook: () => void;
-}
-
-function QuickActionsWidget({ onCreateAudiobook }: QuickActionsWidgetProps) {
+function QuickActionsWidget() {
   const navigate = useNavigate();
 
   const actions = [
-    { label: 'Upload Audio', icon: Upload, onClick: onCreateAudiobook },
-    { label: 'Add Chapter', icon: Plus, onClick: onCreateAudiobook },
+    {
+      label: 'Upload Audio',
+      icon: Upload,
+      onClick: () => navigate('/audiobooks/create'),
+    },
+    {
+      label: 'Add Chapter',
+      icon: Plus,
+      onClick: () => navigate('/audiobooks/create'),
+    },
     { label: 'View Analytics', icon: BarChart3, onClick: () => navigate('/analytics') },
     { label: 'Manage Metadata', icon: FileText, onClick: () => navigate('/management') },
   ];

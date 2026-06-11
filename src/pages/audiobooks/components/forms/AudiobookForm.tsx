@@ -21,6 +21,7 @@ import { isPartnerApp } from '../../../../utils/config';
 import { getOrganizations } from '../../../../utils/audiobookApi';
 import Button from '../../../../components/common/Button';
 import { showApiError } from '../../../../utils/toast';
+import { DEFAULT_AUDIOBOOK_LANGUAGE } from '../../../../utils/audiobookWizard';
 import '../../../../styles/pages/audiobooks/components/forms/AudiobookForm.css';
 
 interface AudiobookFormProps {
@@ -86,6 +87,10 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
         coverImage: null,
         scheduledAt: undefined, // Note: scheduledAt may not be in API response
         meta: initialData.meta || {},
+        language: initialData.language || DEFAULT_AUDIOBOOK_LANGUAGE,
+        isPaid: false,
+        minSubscriptionTier: null,
+        moodId: null,
       };
     }
     return {
@@ -98,6 +103,10 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
       coverImage: null,
       scheduledAt: undefined,
       meta: {},
+      language: DEFAULT_AUDIOBOOK_LANGUAGE,
+      isPaid: false,
+      minSubscriptionTier: null,
+      moodId: null,
     };
   };
 
@@ -191,6 +200,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
         coverImage: null,
         scheduledAt: undefined,
         meta: initialData.meta || {},
+        language: initialData.language || DEFAULT_AUDIOBOOK_LANGUAGE,
       });
     }
   }, [initialData, genres, tags]);
@@ -318,6 +328,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           coverImage: null,
           scheduledAt: undefined,
           meta: {},
+          language: DEFAULT_AUDIOBOOK_LANGUAGE,
         });
       }
 
@@ -457,6 +468,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           coverImage: null,
           scheduledAt: undefined,
           meta: {},
+          language: DEFAULT_AUDIOBOOK_LANGUAGE,
         });
       }
 

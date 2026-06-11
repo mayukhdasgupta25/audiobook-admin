@@ -10,11 +10,13 @@ import type {
   ChaptersApiResponse,
 } from '../types/audiobook';
 import {
+  getAuthApiBaseUrl,
   getContentApiBaseUrl,
   getAuthHeaders,
   getAuthHeadersForFileUpload,
   handleApiError,
 } from './config';
+import { normalizeHexColor } from './colorUtils';
 import { buildAuthorFormData } from './authorFormData';
 import { getAccessToken } from './token';
 
@@ -57,6 +59,93 @@ export interface GenresResponse {
 export interface TagsResponse {
   success: boolean;
   data: TagItem[];
+  message: string;
+  statusCode: number;
+  timestamp: string;
+  path: string;
+}
+
+/**
+ * Subscription plan item from API response
+ */
+export interface SubscriptionPlanItem {
+  id?: string;
+  name: string;
+  minSubscriptionTier?: number;
+}
+
+/**
+ * API response structure for subscription plans
+ */
+export interface SubscriptionPlansResponse {
+  success: boolean;
+  data: SubscriptionPlanItem[];
+  message: string;
+  statusCode: number;
+  timestamp: string;
+  path: string;
+}
+
+/**
+ * Mood item from API response
+ */
+export interface MoodItem {
+  id: string;
+  name: string;
+  color?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function normalizeMoodItem(raw: Record<string, unknown>): MoodItem | null {
+  const id = typeof raw.id === 'string' ? raw.id : undefined;
+  const name = typeof raw.name === 'string' ? raw.name : undefined;
+
+  if (!id || !name) {
+    return null;
+  }
+
+  const color =
+    normalizeHexColor(raw.hexcode) ??
+    normalizeHexColor(raw.hexCode) ??
+    normalizeHexColor(raw.color) ??
+    normalizeHexColor(raw.hex) ??
+    normalizeHexColor(raw.colour) ??
+    normalizeHexColor(raw.backgroundColor);
+
+  return {
+    id,
+    name,
+    ...(color ? { color } : {}),
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
+    updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : '',
+  };
+}
+
+function normalizeMoodsPayload(data: unknown): MoodItem[] {
+  const rawMoods = Array.isArray(data)
+    ? data
+    : data &&
+        typeof data === 'object' &&
+        Array.isArray((data as MoodsResponse).data)
+      ? (data as MoodsResponse).data
+      : [];
+
+  return rawMoods
+    .map(item =>
+      item && typeof item === 'object'
+        ? normalizeMoodItem(item as Record<string, unknown>)
+        : null
+    )
+    .filter((mood): mood is MoodItem => mood != null);
+}
+
+/**
+ * API response structure for moods
+ */
+export interface MoodsResponse {
+  success: boolean;
+  data: MoodItem[];
   message: string;
   statusCode: number;
   timestamp: string;
@@ -194,6 +283,136 @@ export async function getTags(): Promise<TagItem[]> {
 
     const tagsResponse = data as TagsResponse;
     return tagsResponse.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+
+function extractSubscriptionPlansPayload(data: unknown): unknown[] {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (!data || typeof data !== 'object') {
+    return [];
+  }
+
+  const record = data as Record<string, unknown>;
+
+  if (Array.isArray(record.data)) {
+    return record.data;
+  }
+
+  if (record.data && typeof record.data === 'object') {
+    const nested = record.data as Record<string, unknown>;
+    if (Array.isArray(nested.plans)) {
+      return nested.plans;
+    }
+    if (Array.isArray(nested.items)) {
+      return nested.items;
+    }
+  }
+
+  if (Array.isArray(record.plans)) {
+    return record.plans;
+  }
+
+  return [];
+}
+
+function parseSubscriptionPlanRecord(raw: unknown): SubscriptionPlanItem | null {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+
+  const record = raw as Record<string, unknown>;
+  const nameField = [record.name, record.planName, record.title, record.label].find(
+    value => typeof value === 'string' && value.trim()
+  );
+
+  if (typeof nameField !== 'string') {
+    return null;
+  }
+
+  const tierCandidate =
+    record.minSubscriptionTier ?? record.tier ?? record.level;
+  let minSubscriptionTier: number | undefined;
+
+  if (typeof tierCandidate === 'number') {
+    minSubscriptionTier = tierCandidate;
+  } else if (typeof tierCandidate === 'string' && tierCandidate.trim()) {
+    const parsedTier = Number(tierCandidate);
+    if (!Number.isNaN(parsedTier)) {
+      minSubscriptionTier = parsedTier;
+    }
+  }
+
+  return {
+    id: typeof record.id === 'string' ? record.id : undefined,
+    name: nameField.trim(),
+    minSubscriptionTier,
+  };
+}
+
+/**
+ * Fetches subscription plans from the API
+ */
+export async function getSubscriptionPlans(): Promise<SubscriptionPlanItem[]> {
+  try {
+    const headers = getAuthHeaders();
+
+    const response = await fetch(
+      `${getAuthApiBaseUrl()}/auth/subscription-plans/`,
+      {
+        method: 'GET',
+        headers,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error: ApiError = {
+        message:
+          data.message || data.error || 'Failed to fetch subscription plans',
+        error: data.error,
+        statusCode: response.status,
+      };
+      throw error;
+    }
+
+    return extractSubscriptionPlansPayload(data)
+      .map(parseSubscriptionPlanRecord)
+      .filter((plan): plan is SubscriptionPlanItem => plan != null);
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+
+/**
+ * Fetches moods from the API
+ */
+export async function getMoods(): Promise<MoodItem[]> {
+  try {
+    const headers = getAuthHeaders();
+
+    const response = await fetch(`${getContentApiBaseUrl()}/api/v1/moods`, {
+      method: 'GET',
+      headers,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error: ApiError = {
+        message: data.message || data.error || 'Failed to fetch moods',
+        error: data.error,
+        statusCode: response.status,
+      };
+      throw error;
+    }
+
+    return normalizeMoodsPayload(data);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -726,6 +945,24 @@ export async function deleteAuthor(id: string): Promise<void> {
   }
 }
 
+function appendAudiobookPaidAndMoodFields(
+  formData: FormData,
+  audiobookData: CreateAudiobookRequest | UpdateAudiobookRequest
+): void {
+  if (audiobookData.isPublic !== undefined) {
+    formData.append('isPublic', String(audiobookData.isPublic));
+  }
+  if (audiobookData.minSubscriptionTier !== undefined) {
+    formData.append(
+      'minSubscriptionTier',
+      String(audiobookData.minSubscriptionTier)
+    );
+  }
+  if (audiobookData.moodId !== undefined) {
+    formData.append('moodId', audiobookData.moodId);
+  }
+}
+
 export async function createAudiobook(
   audiobookData: CreateAudiobookRequest
 ): Promise<AudiobookApiResponse> {
@@ -744,6 +981,9 @@ export async function createAudiobook(
         formData.append('narrators', JSON.stringify(audiobookData.narrators));
       }
       formData.append('description', audiobookData.description);
+      if (audiobookData.language) {
+        formData.append('language', audiobookData.language);
+      }
       if (audiobookData.organizationId) {
         formData.append('organizationId', audiobookData.organizationId);
       }
@@ -773,6 +1013,8 @@ export async function createAudiobook(
       if (audiobookData.scheduledAt !== undefined) {
         formData.append('scheduledAt', audiobookData.scheduledAt);
       }
+
+      appendAudiobookPaidAndMoodFields(formData, audiobookData);
 
       const response = await fetch(
         `${getContentApiBaseUrl()}/api/v1/audiobooks`,
@@ -900,6 +1142,9 @@ export async function updateAudiobook(
       if (audiobookData.description !== undefined) {
         formData.append('description', audiobookData.description);
       }
+      if (audiobookData.language !== undefined) {
+        formData.append('language', audiobookData.language);
+      }
       if (
         audiobookData.genreIds !== undefined &&
         audiobookData.genreIds.length > 0
@@ -920,6 +1165,8 @@ export async function updateAudiobook(
       if (audiobookData.scheduledAt !== undefined) {
         formData.append('scheduledAt', audiobookData.scheduledAt);
       }
+
+      appendAudiobookPaidAndMoodFields(formData, audiobookData);
 
       const response = await fetch(
         `${getContentApiBaseUrl()}/api/v1/audiobooks/${audiobookData.audiobookId}`,

@@ -88,10 +88,18 @@ export interface AudiobookFormData {
   description: string;
   genres: Genre[];
   tags: Tag[];
+  language: string;
   coverImage: File | null;
   scheduledAt?: string;
   meta: Record<string, string>;
+  isPaid: boolean;
+  minSubscriptionTier: number | null;
+  moodId: string | null;
 }
+
+export type AudiobookWizardData = AudiobookFormData & {
+  existingCoverUrl?: string;
+};
 
 /**
  * Chapter form data structure
@@ -121,9 +129,13 @@ export interface CreateAudiobookRequest {
   organizationId?: string;
   duration: number;
   fileSize: number;
+  language?: string;
   coverImage?: File;
   scheduledAt?: string;
   meta?: Record<string, string>;
+  isPublic?: boolean;
+  minSubscriptionTier?: number;
+  moodId?: string;
 }
 
 /**
@@ -139,10 +151,19 @@ export interface UpdateAudiobookRequest {
   tagIds?: string[];
   duration?: number;
   fileSize?: number;
+  language?: string;
   coverImage?: File;
   scheduledAt?: string;
   meta?: Record<string, string>;
+  isPublic?: boolean;
+  minSubscriptionTier?: number;
+  moodId?: string;
 }
+
+export type ChapterWizardData = ChapterFormData & {
+  existingCoverUrl?: string;
+  existingAudioUrl?: string;
+};
 
 /**
  * Pagination information from API

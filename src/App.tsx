@@ -8,7 +8,9 @@ const Login = lazy(() => import('./pages/login/Login'));
 const PartnerRegister = lazy(() => import('./pages/partner/PartnerRegister'));
 const Layout = lazy(() => import('./components/layout/Layout'));
 const Audiobooks = lazy(() => import('./pages/audiobooks/Audiobooks'));
+const AudiobookWizard = lazy(() => import('./pages/audiobooks/AudiobookWizard'));
 const Chapters = lazy(() => import('./pages/chapters/Chapters'));
+const ChapterWizard = lazy(() => import('./pages/chapters/ChapterWizard'));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 const Analytics = lazy(() => import('./pages/analytics/Analytics'));
 const Management = lazy(() => import('./pages/management/Management'));
@@ -120,8 +122,18 @@ function App() {
               path="/home"
               element={<Navigate to="/audiobooks" replace />}
             />
-            <Route path="/audiobooks" element={<Audiobooks />} />
+            <Route path="/audiobooks/create" element={<AudiobookWizard />} />
+            <Route path="/audiobooks/:id/edit" element={<AudiobookWizard />} />
+            <Route
+              path="/audiobooks/:id/chapters/create"
+              element={<ChapterWizard />}
+            />
+            <Route
+              path="/audiobooks/:id/chapters/:chapterId/edit"
+              element={<ChapterWizard />}
+            />
             <Route path="/audiobooks/:id/chapters" element={<Chapters />} />
+            <Route path="/audiobooks" element={<Audiobooks />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/management" element={<Management />} />

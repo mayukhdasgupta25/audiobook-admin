@@ -2,6 +2,7 @@ export interface PasswordChecks {
   length: boolean;
   uppercase: boolean;
   number: boolean;
+  symbol: boolean;
 }
 
 export interface PasswordStrengthResult {
@@ -15,6 +16,7 @@ export function getPasswordStrength(password: string): PasswordStrengthResult {
     length: password.length >= 8,
     uppercase: /[A-Z]/.test(password),
     number: /[0-9]/.test(password),
+    symbol: /[^A-Za-z0-9]/.test(password),
   };
 
   const score = Object.values(checks).filter(Boolean).length;
@@ -23,6 +25,8 @@ export function getPasswordStrength(password: string): PasswordStrengthResult {
   if (score === 2) {
     label = 'Fair';
   } else if (score === 3) {
+    label = 'Fair';
+  } else if (score === 4) {
     label = 'Good';
   }
 
@@ -31,5 +35,7 @@ export function getPasswordStrength(password: string): PasswordStrengthResult {
 
 export function isPasswordStrongEnough(password: string): boolean {
   const { checks } = getPasswordStrength(password);
-  return checks.length && checks.uppercase && checks.number;
+  return (
+    checks.length && checks.uppercase && checks.number && checks.symbol
+  );
 }

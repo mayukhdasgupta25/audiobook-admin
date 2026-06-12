@@ -332,6 +332,8 @@ function PartnerRegister() {
 
         password: data.password,
 
+        confirmPassword: data.confirmPassword,
+
         role: ADMIN_ROLE,
 
         address: data.address || undefined,
@@ -479,6 +481,8 @@ function PartnerRegister() {
         email: individualDetails.email,
 
         password: data.password,
+
+        confirmPassword: data.confirmPassword,
 
         firstName: individualDetails.firstName,
 

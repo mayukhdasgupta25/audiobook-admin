@@ -428,7 +428,7 @@ describe('AudiobookWizard', () => {
     });
 
     expect(createAudiobookMock.mock.calls[0][0]).toMatchObject({
-      isPublic: true,
+      isPublic: false,
       minSubscriptionTier: 2,
       moodId: 'mood-1',
     });

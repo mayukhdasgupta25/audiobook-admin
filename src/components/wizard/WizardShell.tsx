@@ -12,6 +12,7 @@ import {
 export type { WizardMode };
 
 interface WizardShellProps {
+  className?: string;
   title: string;
   subtitle: string;
   mode: WizardMode;
@@ -37,6 +38,7 @@ interface WizardShellProps {
 }
 
 function WizardShell({
+  className,
   title,
   subtitle,
   mode,
@@ -77,7 +79,7 @@ function WizardShell({
 
   return (
     <WizardFormActionsContext.Provider value={formActions}>
-      <div className="wizard-page">
+      <div className={className ? `wizard-page ${className}` : 'wizard-page'}>
         <div className="wizard-header">
           <div className="wizard-header-layout">
             <div className="wizard-header-title-row">

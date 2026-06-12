@@ -415,6 +415,8 @@ describe('PartnerRegister organization flow', () => {
 
         password: 'Secure1pass!',
 
+        confirmPassword: 'Secure1pass!',
+
         role: 'ADMIN',
 
         address: '123 Publisher Lane',
@@ -564,6 +566,8 @@ describe('PartnerRegister organization flow', () => {
         email: 'admin@acme.com',
 
         password: 'Secure1pass!',
+
+        confirmPassword: 'Secure1pass!',
 
         role: 'ADMIN',
 
@@ -818,6 +822,8 @@ describe('PartnerRegister individual flow', () => {
 
         password: 'Secure1pass!',
 
+        confirmPassword: 'Secure1pass!',
+
         firstName: 'Jane',
 
         lastName: 'Author',
@@ -871,6 +877,8 @@ describe('PartnerRegister individual flow', () => {
         email: 'author@example.com',
 
         password: 'Secure1pass!',
+
+        confirmPassword: 'Secure1pass!',
 
         firstName: 'Jane',
 

@@ -1,0 +1,39 @@
+.audiobook-wizard {
+  --audiobook-control-border: #9ca3af;
+}
+
+.audiobook-wizard .wizard-field-group input:not(.wizard-pill-input):not(.narrators-input),
+.audiobook-wizard .wizard-field-group textarea,
+.audiobook-wizard .wizard-field-group select:not(.select-input) {
+  border-color: var(--audiobook-control-border);
+}
+
+.audiobook-wizard .wizard-input-with-icon {
+  border-color: var(--audiobook-control-border);
+}
+
+.audiobook-wizard .wizard-pill-option:not(.wizard-pill-option--selected) {
+  border-color: var(--audiobook-control-border);
+}
+
+.audiobook-wizard .pill-switch:not(.pill-switch--checked) {
+  border-color: var(--audiobook-control-border);
+}
+
+.audiobook-wizard .narrators-input-container {
+  border-color: var(--audiobook-control-border);
+}
+
+.audiobook-wizard .meta-container {
+  border-color: var(--audiobook-control-border);
+}
+
+.audiobook-wizard .meta-key-input,
+.audiobook-wizard .meta-value-input {
+  border-color: var(--audiobook-control-border);
+}
+
+.audiobook-wizard .image-upload-dropzone,
+.audiobook-wizard .image-upload-selected {
+  border-color: var(--audiobook-control-border);
+}

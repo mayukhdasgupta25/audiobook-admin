@@ -8,6 +8,7 @@ export function buildRegisterFormData(input: RegisterFormDataInput): FormData {
   const formData = new FormData();
   formData.append('email', input.email.trim());
   formData.append('password', input.password);
+  formData.append('confirmPassword', input.confirmPassword);
 
   if (input.role) {
     formData.append('role', input.role);

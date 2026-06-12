@@ -47,6 +47,7 @@ export interface CreateOrganizationResponse {
 export interface RegisterRequest {
   email: string;
   password: string;
+  confirmPassword: string;
   role?: string;
   type?: string;
   firstName?: string;
@@ -80,6 +81,7 @@ export interface VerifyRegistrationOtpResponse {
 export interface RegisterPartnerUserInput {
   email: string;
   password: string;
+  confirmPassword: string;
   role: string;
   address?: string;
   contact?: string;
@@ -88,6 +90,7 @@ export interface RegisterPartnerUserInput {
 export interface RegisterIndividualInput {
   email: string;
   password: string;
+  confirmPassword: string;
   firstName: string;
   lastName: string;
   address?: string;

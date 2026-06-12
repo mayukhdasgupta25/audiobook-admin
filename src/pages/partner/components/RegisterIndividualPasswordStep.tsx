@@ -17,6 +17,7 @@ import { isPasswordStrongEnough } from '../../../utils/passwordStrength';
 
 export interface RegisterIndividualPasswordData {
   password: string;
+  confirmPassword: string;
   acceptedTerms: boolean;
 }
 
@@ -62,6 +63,7 @@ function RegisterIndividualPasswordStep({
 
   const buildFormData = (): RegisterIndividualPasswordData => ({
     password,
+    confirmPassword,
     acceptedTerms,
   });
 

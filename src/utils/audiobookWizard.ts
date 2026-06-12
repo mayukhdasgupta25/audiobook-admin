@@ -98,7 +98,7 @@ export function hydrateAudiobookWizardData(
     coverImage: null,
     scheduledAt: undefined,
     meta: initialData.meta || {},
-    isPaid: Boolean(initialData.isPublic),
+    isPaid: initialData.isPublic === false,
     minSubscriptionTier: null,
     moodId: null,
     existingCoverUrl: initialData.coverImage,
@@ -190,9 +190,13 @@ function buildPaidAndMoodFields(data: AudiobookFormData): {
     moodId?: string;
   } = {};
 
-  if (data.isPaid && data.minSubscriptionTier != null) {
+  if (data.isPaid) {
+    fields.isPublic = false;
+    if (data.minSubscriptionTier != null) {
+      fields.minSubscriptionTier = data.minSubscriptionTier;
+    }
+  } else {
     fields.isPublic = true;
-    fields.minSubscriptionTier = data.minSubscriptionTier;
   }
 
   if (data.moodId) {

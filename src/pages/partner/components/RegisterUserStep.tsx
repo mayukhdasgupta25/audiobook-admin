@@ -44,6 +44,8 @@ export interface RegisterUserFormData {
 
   password: string;
 
+  confirmPassword: string;
+
   address: string;
 
   contact: string;
@@ -213,6 +215,8 @@ function RegisterUserStep({
       email: email.trim(),
 
       password,
+
+      confirmPassword,
 
       address: trimmedAddress,
 

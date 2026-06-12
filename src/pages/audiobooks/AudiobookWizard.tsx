@@ -44,6 +44,7 @@ import ContributorsStep from './components/wizard/steps/ContributorsStep';
 import ContentAssetsStep from './components/wizard/steps/ContentAssetsStep';
 import ReviewPublishStep from './components/wizard/steps/ReviewPublishStep';
 import '../../styles/components/wizard/WizardShell.css';
+import '../../styles/pages/audiobooks/AudiobookWizard.css';
 
 const AUDIOBOOK_STEPS: WizardStepConfig[] = [
   { label: 'Basics', description: 'Tell us the essentials', icon: FileText },
@@ -259,6 +260,7 @@ function AudiobookWizard() {
 
   return (
     <WizardShell
+      className="audiobook-wizard"
       title={title}
       subtitle={subtitle}
       mode={mode}

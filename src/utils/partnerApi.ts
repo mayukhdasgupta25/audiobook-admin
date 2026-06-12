@@ -227,6 +227,7 @@ export async function registerPartnerUser(
   const body: RegisterRequest = {
     email: input.email.trim(),
     password: input.password,
+    confirmPassword: input.confirmPassword,
     role: input.role,
   };
   if (input.address?.trim()) {
@@ -247,6 +248,7 @@ export async function registerIndividualPartner(
   const body: RegisterFormDataInput = {
     email: input.email.trim(),
     password: input.password,
+    confirmPassword: input.confirmPassword,
     type: 'AUTHOR',
     firstName: input.firstName.trim(),
     lastName: input.lastName.trim(),

@@ -23,6 +23,7 @@ describe('registerUser', () => {
     await registerUser({
       email: 'author@example.com',
       password: 'Secure1pass',
+      confirmPassword: 'Secure1pass',
       type: 'AUTHOR',
       firstName: 'Jane',
       lastName: 'Author',
@@ -43,6 +44,7 @@ describe('registerUser', () => {
     const formData = requestInit.body as FormData;
     expect(formData.get('profileImage')).toBe(profileImage);
     expect(formData.get('email')).toBe('author@example.com');
+    expect(formData.get('confirmPassword')).toBe('Secure1pass');
   });
 
   it('sends JSON when profileImage is not provided', async () => {
@@ -54,6 +56,7 @@ describe('registerUser', () => {
     await registerUser({
       email: 'admin@acme.com',
       password: 'Secure1pass',
+      confirmPassword: 'Secure1pass',
       role: 'ADMIN',
     });
 
@@ -65,6 +68,7 @@ describe('registerUser', () => {
       JSON.stringify({
         email: 'admin@acme.com',
         password: 'Secure1pass',
+        confirmPassword: 'Secure1pass',
         role: 'ADMIN',
       })
     );

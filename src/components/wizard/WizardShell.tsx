@@ -4,10 +4,11 @@ import WizardStepIndicator from './WizardStepIndicator';
 import WizardStepper, { type WizardStepConfig } from './WizardStepper';
 import {
   WizardFormActionsContext,
-  WizardStepActionsBar,
   type WizardFormActionsValue,
   type WizardMode,
-} from './wizardFormActions';import '../../styles/components/wizard/WizardShell.css';
+} from './wizardFormActionsContext';
+import { WizardStepActionsBar } from './wizardFormActions';
+import '../../styles/components/wizard/WizardShell.css';
 
 export type { WizardMode };
 

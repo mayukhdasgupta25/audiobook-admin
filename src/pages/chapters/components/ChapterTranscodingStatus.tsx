@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import type { ChapterTranscodingStatus } from '../../../types/streaming';
-import { retryChapterTranscoding } from '../../../utils/streamingApi';
-import Button from '../../../components/common/Button';
+import { useAppDispatch } from '../../../hooks/redux';
+import {
+  markBitrateRetrying,
+  queueChapterTranscodingRefresh,
+} from '../../../store/slices/transcodingSlice';
+import {
+  getBitrateRow,
+  retryChapterTranscoding,
+  TARGET_BITRATES,
+} from '../../../utils/streamingApi';
+import { showApiError } from '../../../utils/toast';
+import BitrateProgressRing from './BitrateProgressRing';
 import '../../../styles/pages/chapters/components/ChapterTranscodingStatus.css';
 
 interface ChapterTranscodingStatusProps {
@@ -13,72 +23,42 @@ const ChapterTranscodingStatus: React.FC<ChapterTranscodingStatusProps> = ({
   chapterId,
   status,
 }) => {
+  const dispatch = useAppDispatch();
   const [retryingBitrate, setRetryingBitrate] = useState<number | null>(null);
-
-  if (!status?.bitrates?.length) {
-    return null;
-  }
 
   const handleRetry = async (bitrate: number): Promise<void> => {
     try {
       setRetryingBitrate(bitrate);
       await retryChapterTranscoding(chapterId, [bitrate]);
+      dispatch(markBitrateRetrying({ chapterId, bitrate }));
+      dispatch(queueChapterTranscodingRefresh(chapterId));
+    } catch (error) {
+      showApiError(error);
     } finally {
       setRetryingBitrate(null);
     }
   };
 
   return (
-    <div className="chapter-transcoding-status" aria-label="Stream transcoding status">
-      {status.bitrates.map(row => {
-        const label =
-          row.status === 'pending'
-            ? 'Pending'
-            : row.status === 'processing'
-              ? 'Transcoding: Ongoing'
-              : row.status === 'completed'
-                ? 'Transcoding: Completed'
-                : 'Failed';
-
+    <div
+      className="chapter-transcoding-status"
+      aria-label="Stream transcoding status"
+    >
+      {TARGET_BITRATES.map(bitrate => {
+        const row = getBitrateRow(status, bitrate);
         return (
-          <div key={row.bitrate} className={`chapter-transcoding-row chapter-transcoding-${row.status}`}>
-            <div className="chapter-transcoding-row-header">
-              <span>{row.bitrate}k — {label}</span>
-              <span className="chapter-transcoding-percent">{row.progress}%</span>
-            </div>
-            {(row.status === 'processing' || row.status === 'pending') && (
-              <div
-                className="chapter-transcoding-progress-track"
-                role="progressbar"
-                aria-valuenow={row.progress}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div
-                  className="chapter-transcoding-progress-fill"
-                  style={{ width: `${row.progress}%` }}
-                />
-              </div>
-            )}
-            {row.status === 'failed' && (
-              <div className="chapter-transcoding-failed-actions">
-                {row.errorMessage && (
-                  <span className="chapter-transcoding-error" title={row.errorMessage}>
-                    {row.errorMessage}
-                  </span>
-                )}
-                <Button
-                  type="button"
-                  size="small"
-                  variant="secondary"
-                  disabled={retryingBitrate === row.bitrate}
-                  onClick={() => void handleRetry(row.bitrate)}
-                >
-                  Retry
-                </Button>
-              </div>
-            )}
-          </div>
+          <BitrateProgressRing
+            key={bitrate}
+            bitrate={bitrate}
+            progress={row.progress}
+            status={row.status}
+            isRetrying={retryingBitrate === bitrate}
+            onRetry={
+              row.status === 'failed'
+                ? () => void handleRetry(bitrate)
+                : undefined
+            }
+          />
         );
       })}
     </div>

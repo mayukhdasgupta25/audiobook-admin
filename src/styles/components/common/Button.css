@@ -127,3 +127,8 @@
   box-shadow: 0 4px 14px rgba(234, 179, 8, 0.25);
   transform: translateY(-2px);
 }
+
+.btn-icon-left {
+  margin-right: 6px;
+  vertical-align: middle;
+}

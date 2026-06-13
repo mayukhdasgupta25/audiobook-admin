@@ -1,0 +1,126 @@
+import { MoreVertical } from 'lucide-react';
+import { useRef } from 'react';
+import TableActionsMenu from '../../../components/common/TableActionsMenu';
+import type { ChapterApiResponse } from '../../../types/audiobook';
+import type { ChapterTranscodingStatus } from '../../../types/streaming';
+import { formatDuration } from '../../../utils/formatting';
+import { computeStreamBadge } from '../../../utils/streamingApi';
+import { getChapterStatus } from './chapterTableStatus';
+import ChapterTranscodingStatusPanel from './ChapterTranscodingStatus';
+import '../../../styles/components/common/TableActionsMenu.css';
+
+interface ChapterTableRowProps {
+  chapter: ChapterApiResponse;
+  transcodingStatus?: ChapterTranscodingStatus;
+  openMenuId: string | null;
+  onMenuToggle: (chapterId: string) => void;
+  onMenuClose: () => void;
+  onEdit: (chapter: ChapterApiResponse) => void;
+  onDelete: (chapter: ChapterApiResponse) => void;
+}
+
+function truncateDescription(text: string, maxLength = 120): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength)}...`;
+}
+
+function ChapterTableRow({
+  chapter,
+  transcodingStatus,
+  openMenuId,
+  onMenuToggle,
+  onMenuClose,
+  onEdit,
+  onDelete,
+}: ChapterTableRowProps) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const isMenuOpen = openMenuId === chapter.id;
+  const status = getChapterStatus(chapter);
+  const streamBadge = computeStreamBadge(transcodingStatus);
+
+  return (
+    <tr className="chapter-table-row">
+      <td>
+        <div className="chapter-table-title-cell">
+          {chapter.coverImage ? (
+            <img
+              src={chapter.coverImage}
+              alt=""
+              className="chapter-table-thumb"
+            />
+          ) : (
+            <div className="chapter-table-thumb chapter-table-thumb--placeholder" />
+          )}
+          <div>
+            <p className="chapter-table-title">{chapter.title}</p>
+            {chapter.description && (
+              <p className="chapter-table-description">
+                {truncateDescription(chapter.description)}
+              </p>
+            )}
+          </div>
+        </div>
+      </td>
+      <td>
+        <span className="chapter-table-number">{chapter.chapterNumber}</span>
+      </td>
+      <td>
+        <span
+          className={`audiobook-status-badge audiobook-status-badge--${status.variant === 'upload-failed' ? 'draft' : status.variant} ${status.variant === 'upload-failed' ? 'chapter-status-badge--upload-failed' : ''}`}
+        >
+          {status.label}
+        </span>
+      </td>
+      <td>{formatDuration(chapter.duration)}</td>
+      <td>
+        <span className={`chapter-stream-badge ${streamBadge.className}`}>
+          {streamBadge.label}
+        </span>
+      </td>
+      <td>
+        <ChapterTranscodingStatusPanel
+          chapterId={chapter.id}
+          status={transcodingStatus}
+        />
+      </td>
+      <td className="chapter-table-actions-cell">
+        <div
+          className="audiobook-table-actions"
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            ref={triggerRef}
+            type="button"
+            className="audiobook-table-menu-btn"
+            aria-label="Actions"
+            aria-haspopup="menu"
+            aria-expanded={isMenuOpen}
+            onClick={() => onMenuToggle(chapter.id)}
+          >
+            <MoreVertical size={18} />
+          </button>
+          <TableActionsMenu
+            isOpen={isMenuOpen}
+            onClose={onMenuClose}
+            anchorRef={triggerRef}
+            items={[
+              {
+                label: 'Edit',
+                onClick: () => onEdit(chapter),
+              },
+              {
+                label: 'Delete',
+                onClick: () => onDelete(chapter),
+                variant: 'danger',
+              },
+            ]}
+          />
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+export default ChapterTableRow;

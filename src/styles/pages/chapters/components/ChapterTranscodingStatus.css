@@ -1,99 +1,44 @@
 .chapter-transcoding-status {
-  margin-top: 0.75rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: 0.75rem;
 }
 
-.chapter-transcoding-row {
-  font-size: 0.8125rem;
-  border-radius: 6px;
-  padding: 0.5rem 0.625rem;
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.chapter-transcoding-row-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.25rem;
-}
-
-.chapter-transcoding-percent {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-.chapter-transcoding-progress-track {
-  height: 6px;
+.chapter-stream-badge {
+  display: inline-block;
+  padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-
-.chapter-transcoding-progress-fill {
-  height: 100%;
-  background: #f59e0b;
-  transition: width 0.3s ease;
-}
-
-.chapter-transcoding-processing .chapter-transcoding-progress-fill {
-  background: #f59e0b;
-}
-
-.chapter-transcoding-completed {
-  color: #15803d;
-}
-
-.chapter-transcoding-failed-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.chapter-transcoding-error {
-  color: #b91c1c;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 12rem;
-}
-
-.chapter-card-stream-badge {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  margin-left: 0.375rem;
+  white-space: nowrap;
 }
 
-.chapter-card-stream-processing {
+.chapter-stream-badge-processing {
   background: #fef3c7;
   color: #92400e;
 }
 
-.chapter-card-stream-ready {
+.chapter-stream-badge-ready {
   background: #dcfce7;
   color: #166534;
 }
 
-.chapter-card-stream-partial {
+.chapter-stream-badge-partial {
   background: #ffedd5;
   color: #9a3412;
 }
 
-.chapter-card-stream-failed {
+.chapter-stream-badge-failed {
   background: #fee2e2;
   color: #991b1b;
 }
 
-.chapter-card-stream-unknown {
+.chapter-stream-badge-unknown {
   background: #f3f4f6;
   color: #4b5563;
 }
 
-.chapter-card-status-source-failed {
-  background: #fecaca;
-  color: #7f1d1d;
+.chapter-status-badge--upload-failed {
+  background: #fee2e2;
+  color: #991b1b;
 }

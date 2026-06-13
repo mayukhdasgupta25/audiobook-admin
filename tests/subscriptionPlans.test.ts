@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildSubscriptionPlanSelectOptions,
+  getAudiobookSubscriptionTierLabel,
   getSubscriptionPlanNameForTier,
   getSubscriptionTierForPlanName,
   resolveSubscriptionPlanTier,
@@ -47,5 +48,14 @@ describe('subscriptionPlans', () => {
     expect(getSubscriptionPlanNameForTier(2)).toBe('Standard Plan');
     expect(getSubscriptionPlanNameForTier(3)).toBe('Premium Plan');
     expect(getSubscriptionPlanNameForTier(4)).toBeUndefined();
+  });
+
+  it('maps audiobook subscription tiers to table labels', () => {
+    expect(getAudiobookSubscriptionTierLabel(null)).toBe('Free');
+    expect(getAudiobookSubscriptionTierLabel(undefined)).toBe('Free');
+    expect(getAudiobookSubscriptionTierLabel(1)).toBe('Base');
+    expect(getAudiobookSubscriptionTierLabel(2)).toBe('Standard');
+    expect(getAudiobookSubscriptionTierLabel(3)).toBe('Premium');
+    expect(getAudiobookSubscriptionTierLabel(4)).toBe('Tier 4');
   });
 });

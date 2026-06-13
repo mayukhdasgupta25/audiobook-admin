@@ -1,0 +1,78 @@
+.bitrate-progress-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 52px;
+}
+
+.bitrate-progress-ring-chart {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.bitrate-progress-ring-track {
+  stroke: rgba(0, 0, 0, 0.08);
+}
+
+.bitrate-progress-ring-fill {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.bitrate-progress-ring--in-progress .bitrate-progress-ring-fill {
+  stroke: #f59e0b;
+}
+
+.bitrate-progress-ring--completed .bitrate-progress-ring-fill {
+  stroke: #16a34a;
+}
+
+.bitrate-progress-ring--failed .bitrate-progress-ring-fill {
+  stroke: #dc2626;
+}
+
+.bitrate-progress-ring-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.bitrate-progress-ring-center-retry {
+  position: absolute;
+  inset: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.bitrate-progress-ring-center-retry:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.bitrate-progress-ring-center-retry:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.bitrate-progress-ring-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}

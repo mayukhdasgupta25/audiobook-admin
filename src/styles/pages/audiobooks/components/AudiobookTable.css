@@ -1,9 +1,15 @@
 .audiobook-table-wrapper {
+  overflow: visible;
+}
+
+.audiobook-table-scroll {
   overflow-x: auto;
+  overflow-y: visible;
 }
 
 .audiobook-table {
   width: 100%;
+  min-width: 960px;
   border-collapse: collapse;
   font-size: 0.875rem;
 }
@@ -69,6 +75,10 @@
   font-size: 0.875rem;
 }
 
+.audiobook-table-subscription {
+  font-size: 0.875rem;
+}
+
 .audiobook-status-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -78,22 +88,41 @@
 }
 
 .audiobook-status-badge--live {
-  background: var(--color-success-light);
+  background: #dcfce7;
   color: #166534;
 }
 
-.audiobook-status-badge--scheduled {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-}
-
-.audiobook-status-badge--draft {
+.audiobook-status-badge--scheduled,
+.audiobook-status-badge--draft,
+.audiobook-status-badge--pending {
   background: var(--color-warning-light);
   color: #92400e;
 }
 
 .audiobook-table-actions {
   position: relative;
+}
+
+.audiobook-table-actions-cell,
+.chapter-table-actions-cell {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--color-bg-primary);
+  box-shadow: -8px 0 12px -10px rgba(15, 23, 42, 0.18);
+}
+
+.audiobook-table-row:hover .audiobook-table-actions-cell,
+.chapter-table-row:hover .chapter-table-actions-cell {
+  background: var(--color-bg-secondary);
+}
+
+.audiobook-table thead th:last-child,
+.chapter-table thead th:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background: var(--color-bg-primary);
 }
 
 .audiobook-table-menu-btn {
@@ -108,36 +137,4 @@
 
 .audiobook-table-menu-btn:hover {
   background: var(--color-bg-tertiary);
-}
-
-.audiobook-table-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 20;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  min-width: 140px;
-  overflow: hidden;
-}
-
-.audiobook-table-menu button {
-  display: block;
-  width: 100%;
-  padding: 10px 14px;
-  border: none;
-  background: none;
-  text-align: left;
-  font-size: 0.8125rem;
-  cursor: pointer;
-}
-
-.audiobook-table-menu button:hover {
-  background: var(--color-bg-secondary);
-}
-
-.audiobook-table-menu button.danger {
-  color: var(--color-danger);
 }

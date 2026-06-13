@@ -1,6 +1,7 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getContentApiBaseUrl, getAuthHeaders } from './config';
 import type {
+  BitrateTranscodingStatus,
   ChapterTranscodingStatus,
   TranscodingEvent,
   TranscodingSnapshotEvent,
@@ -9,6 +10,23 @@ import type {
 interface ApiEnvelope<T> {
   success: boolean;
   data: T;
+}
+
+export class StreamingApiHttpError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'StreamingApiHttpError';
+    this.status = status;
+  }
+}
+
+export function isStreamingServerError(error: unknown): boolean {
+  if (error instanceof StreamingApiHttpError) {
+    return error.status >= 500 && error.status <= 599;
+  }
+  return false;
 }
 
 function streamBaseUrl(): string {
@@ -23,7 +41,10 @@ export async function getChapterTranscodingStatus(
     { headers: getAuthHeaders() }
   );
   if (!response.ok) {
-    throw new Error(`Failed to fetch transcoding status (${response.status})`);
+    throw new StreamingApiHttpError(
+      `Failed to fetch transcoding status (${response.status})`,
+      response.status
+    );
   }
   const body = (await response.json()) as ApiEnvelope<ChapterTranscodingStatus>;
   return body.data;
@@ -51,6 +72,137 @@ export async function retryChapterTranscoding(
   return body.data;
 }
 
+function parseSnapshotSseEvent(rawEvent: string): TranscodingSnapshotEvent | null {
+  const lines = rawEvent.split('\n');
+  let eventType: string | undefined;
+  let data: string | undefined;
+
+  for (const line of lines) {
+    if (line.startsWith('event:')) {
+      eventType = line.slice(6).trim();
+    } else if (line.startsWith('data:')) {
+      data = line.slice(5).trim();
+    }
+  }
+
+  if (eventType !== 'snapshot' || !data) {
+    return null;
+  }
+
+  return JSON.parse(data) as TranscodingSnapshotEvent;
+}
+
+function buildTranscodingEventsUrl(chapterIds: string[]): string {
+  const query = chapterIds.map(id => encodeURIComponent(id)).join(',');
+  return chapterIds.length === 1
+    ? `${streamBaseUrl()}/chapters/${chapterIds[0]}/transcoding/events`
+    : `${streamBaseUrl()}/transcoding/events?chapterIds=${query}`;
+}
+
+/**
+ * Opens the events stream briefly to read initial snapshot events, then closes.
+ */
+export async function fetchChapterTranscodingEventSnapshots(
+  chapterIds: string[]
+): Promise<TranscodingSnapshotEvent[]> {
+  if (!chapterIds.length) {
+    return [];
+  }
+
+  const controller = new AbortController();
+  const snapshots: TranscodingSnapshotEvent[] = [];
+  const pendingIds = new Set(chapterIds);
+  let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+
+  try {
+    const response = await fetch(buildTranscodingEventsUrl(chapterIds), {
+      headers: getAuthHeaders() as Record<string, string>,
+      signal: controller.signal,
+    });
+
+    if (!response.ok || !response.body) {
+      throw new StreamingApiHttpError(
+        `Failed to fetch transcoding events (${response.status})`,
+        response.status
+      );
+    }
+
+    reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (pendingIds.size > 0) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+
+      let boundaryIndex = buffer.indexOf('\n\n');
+      while (boundaryIndex !== -1) {
+        const chunk = buffer.slice(0, boundaryIndex);
+        buffer = buffer.slice(boundaryIndex + 2);
+        boundaryIndex = buffer.indexOf('\n\n');
+
+        if (!chunk.trim() || chunk.startsWith(':')) {
+          continue;
+        }
+
+        const snapshot = parseSnapshotSseEvent(chunk);
+        if (snapshot && pendingIds.has(snapshot.chapterId)) {
+          snapshots.push(snapshot);
+          pendingIds.delete(snapshot.chapterId);
+        }
+      }
+    }
+  } catch (error) {
+    if (!controller.signal.aborted) {
+      throw error;
+    }
+  } finally {
+    controller.abort();
+    if (reader) {
+      await reader.cancel().catch(() => undefined);
+    }
+  }
+
+  return snapshots;
+}
+
+export async function pollChapterTranscodingUpdates(
+  chapterIds: string[]
+): Promise<{
+  statuses: PromiseSettledResult<ChapterTranscodingStatus>[];
+  snapshots: TranscodingSnapshotEvent[];
+  hasServerError: boolean;
+}> {
+  const statuses = await Promise.allSettled(
+    chapterIds.map(id => getChapterTranscodingStatus(id))
+  );
+
+  const hasStatusServerError = statuses.some(
+    result => result.status === 'rejected' && isStreamingServerError(result.reason)
+  );
+
+  let snapshots: TranscodingSnapshotEvent[] = [];
+  let hasEventsServerError = false;
+
+  try {
+    snapshots = await fetchChapterTranscodingEventSnapshots(chapterIds);
+  } catch (error) {
+    if (isStreamingServerError(error)) {
+      hasEventsServerError = true;
+    }
+  }
+
+  return {
+    statuses,
+    snapshots,
+    hasServerError: hasStatusServerError || hasEventsServerError,
+  };
+}
+
 export function subscribeChapterTranscodingEvents(
   chapterIds: string[],
   onEvent: (event: TranscodingEvent) => void,
@@ -58,11 +210,7 @@ export function subscribeChapterTranscodingEvents(
   onError?: (error: unknown) => void
 ): () => void {
   const controller = new AbortController();
-  const query = chapterIds.map(id => encodeURIComponent(id)).join(',');
-  const url =
-    chapterIds.length === 1
-      ? `${streamBaseUrl()}/chapters/${chapterIds[0]}/transcoding/events`
-      : `${streamBaseUrl()}/transcoding/events?chapterIds=${query}`;
+  const url = buildTranscodingEventsUrl(chapterIds);
 
   void fetchEventSource(url, {
     signal: controller.signal,
@@ -96,7 +244,7 @@ export function computeStreamBadge(
   status?: ChapterTranscodingStatus
 ): { label: string; className: string } {
   if (!status) {
-    return { label: 'Unknown', className: 'chapter-card-stream-unknown' };
+    return { label: 'Unknown', className: 'chapter-stream-badge-unknown' };
   }
 
   const inProgress = status.bitrates.filter(
@@ -108,19 +256,47 @@ export function computeStreamBadge(
     );
     return {
       label: `Processing (${avg}%)`,
-      className: 'chapter-card-stream-processing',
+      className: 'chapter-stream-badge-processing',
     };
   }
 
   if (status.aggregateStatus === 'completed' && status.canStream) {
-    return { label: 'Ready', className: 'chapter-card-stream-ready' };
+    return { label: 'Ready', className: 'chapter-stream-badge-ready' };
   }
   if (status.aggregateStatus === 'partial') {
-    return { label: 'Partial', className: 'chapter-card-stream-partial' };
+    return { label: 'Partial', className: 'chapter-stream-badge-partial' };
   }
   if (status.aggregateStatus === 'failed') {
-    return { label: 'Failed', className: 'chapter-card-stream-failed' };
+    return { label: 'Failed', className: 'chapter-stream-badge-failed' };
   }
 
-  return { label: 'Processing', className: 'chapter-card-stream-processing' };
+  return { label: 'Processing', className: 'chapter-stream-badge-processing' };
+}
+
+export const TARGET_BITRATES = [64, 128, 256] as const;
+
+export function getBitrateRow(
+  status: ChapterTranscodingStatus | undefined,
+  bitrate: number
+): BitrateTranscodingStatus {
+  return (
+    status?.bitrates.find(row => row.bitrate === bitrate) ?? {
+      bitrate,
+      status: 'pending',
+      progress: 0,
+    }
+  );
+}
+
+export function chapterNeedsTranscodingPoll(
+  status: ChapterTranscodingStatus | undefined
+): boolean {
+  if (!status) {
+    return true;
+  }
+
+  return TARGET_BITRATES.some(bitrate => {
+    const row = getBitrateRow(status, bitrate);
+    return row.progress < 100 && row.status !== 'failed';
+  });
 }

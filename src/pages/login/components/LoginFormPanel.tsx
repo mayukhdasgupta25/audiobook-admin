@@ -1,6 +1,6 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, Shield } from 'lucide-react';
+import { Eye, EyeOff, Fingerprint, Lock, Mail, Shield } from 'lucide-react';
 import { useAppDispatch } from '../../../hooks/redux';
 import { login } from '../../../utils/api';
 import { setAuthenticated } from '../../../utils/auth';
@@ -22,6 +22,10 @@ import type { LoginRequest, LoginResponse } from '../../../types/auth';
 import { showApiError } from '../../../utils/toast';
 import { validateEmail } from '../../../utils/validation';
 import Button from '../../../components/common/Button';
+import InfoHint from '../../../components/common/InfoHint';
+
+const IDENTIFIER_HINT =
+  'Organization members: Use your organization identifier. Authors: Use your author identifier.';
 
 function LoginFormPanel() {
   const navigate = useNavigate();
@@ -106,6 +110,24 @@ function LoginFormPanel() {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
+            <div className="login-form-label-row">
+              <label htmlFor="identifier">Identifier</label>
+              <InfoHint message={IDENTIFIER_HINT} />
+            </div>
+            <div className="input-with-icon">
+              <Fingerprint size={18} className="input-icon" />
+              <input
+                id="identifier"
+                type="text"
+                value={slug}
+                onChange={e => setSlug(e.target.value)}
+                placeholder="Organization or author slug"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="email">Email</label>
             <div className="input-with-icon">
               <Mail size={18} className="input-icon" />
@@ -146,22 +168,6 @@ function LoginFormPanel() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="workspace-slug">Workspace slug</label>
-            <input
-              id="workspace-slug"
-              type="text"
-              value={slug}
-              onChange={e => setSlug(e.target.value)}
-              placeholder="your-org-slug or author-slug"
-              disabled={isLoading}
-            />
-            <p className="login-slug-hint">
-              Organization admins: use your organization slug. Authors: use your
-              author slug. Optional, but recommended for the correct workspace.
-            </p>
           </div>
 
           <div className="login-form-options">

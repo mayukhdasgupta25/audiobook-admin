@@ -31,6 +31,27 @@ describe('transcodingSlice', () => {
     expect(next.statusByChapterId['ch-1']).toEqual(completeStatus);
   });
 
+  it('normalizes stale aggregate fields when all target bitrates are complete', () => {
+    const next = transcodingReducer(
+      undefined,
+      mergeChapterTranscodingStatuses([
+        {
+          chapterId: 'ch-1',
+          canStream: false,
+          masterPlaylistReady: false,
+          aggregateStatus: 'processing',
+          bitrates: [
+            { bitrate: 64, status: 'completed', progress: 100 },
+            { bitrate: 128, status: 'completed', progress: 100 },
+            { bitrate: 256, status: 'completed', progress: 100 },
+          ],
+        },
+      ])
+    );
+
+    expect(next.statusByChapterId['ch-1']).toEqual(completeStatus);
+  });
+
   it('updates connected flag', () => {
     const next = transcodingReducer(undefined, setTranscodingConnected(false));
     expect(next.connected).toBe(false);

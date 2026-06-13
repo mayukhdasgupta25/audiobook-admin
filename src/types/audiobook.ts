@@ -34,6 +34,7 @@ export interface AudiobookApiResponse {
   narrators?: string[];
   description: string;
   duration?: number;
+  chapterCount?: number;
   fileSize?: number;
   coverImage?: string;
   language?: string;

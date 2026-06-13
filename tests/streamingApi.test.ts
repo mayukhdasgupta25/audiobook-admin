@@ -27,10 +27,30 @@ describe('streamingApi', () => {
       bitrates: [
         { bitrate: 64, status: 'processing', progress: 40 },
         { bitrate: 128, status: 'processing', progress: 60 },
+        { bitrate: 256, status: 'processing', progress: 50 },
       ],
     };
 
     expect(computeStreamBadge(status).label).toBe('Processing (50%)');
+  });
+
+  it('computeStreamBadge shows Ready when all target bitrates are complete even if aggregate fields are stale', () => {
+    const status: ChapterTranscodingStatus = {
+      chapterId: 'ch-1',
+      canStream: false,
+      masterPlaylistReady: false,
+      aggregateStatus: 'processing',
+      bitrates: [
+        { bitrate: 64, status: 'completed', progress: 100 },
+        { bitrate: 128, status: 'completed', progress: 100 },
+        { bitrate: 256, status: 'completed', progress: 100 },
+      ],
+    };
+
+    expect(computeStreamBadge(status)).toEqual({
+      label: 'Ready',
+      className: 'chapter-stream-badge-ready',
+    });
   });
 
   it('parses transcoding event shape with progress field', () => {

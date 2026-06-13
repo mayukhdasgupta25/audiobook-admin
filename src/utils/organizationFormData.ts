@@ -12,14 +12,11 @@ export function buildOrganizationFormData(
   if (input.teamSize) {
     formData.append('teamSize', input.teamSize);
   }
-  if (input.preferredGenreId) {
-    formData.append('preferredGenreId', input.preferredGenreId);
+  if (input.preferredGenre?.trim()) {
+    formData.append('preferredGenre', input.preferredGenre.trim());
   }
   if (input.image) {
     formData.append('image', input.image);
-  }
-  if (input.userProfileId?.trim()) {
-    formData.append('userProfileId', input.userProfileId.trim());
   }
 
   return formData;

@@ -12,11 +12,11 @@ import {
 
   registerIndividualPartner,
 
-  fetchUserProfileWithRetry,
-
   verifyRegistrationOtp,
 
   completePartnerOrganizationSetup,
+
+  storeAuthorSlugAfterRegistration,
 
 } from '../../utils/partnerApi';
 
@@ -42,13 +42,13 @@ import {
 
   setRegisteredEmail,
 
-  setUserProfileId,
-
   setIsOtpVerified,
 
   setStep,
 
 } from '../../store/slices/partnerRegistrationSlice';
+
+import { ORGANIZATION_GENRE_OPTIONS } from '../../content/marketingContent';
 
 import Logo from '../../components/common/Logo';
 
@@ -94,7 +94,7 @@ import '../../styles/pages/partner/PartnerRegister.css';
 
 
 
-const ADMIN_ROLE = 'ADMIN';
+const ORG_ADMIN_ROLE = 'ORG_ADMIN';
 
 
 
@@ -119,8 +119,6 @@ function PartnerRegister() {
     individualPassword,
 
     registeredEmail,
-
-    userProfileId,
 
     isOtpVerified,
 
@@ -220,58 +218,6 @@ function PartnerRegister() {
 
 
 
-  useEffect(() => {
-
-    if (
-
-      step !== 4 ||
-
-      partnerType !== 'organization' ||
-
-      !isOtpVerified ||
-
-      userProfileId
-
-    ) {
-
-      return;
-
-    }
-
-
-
-    const fetchProfile = async () => {
-
-      setIsLoading(true);
-
-      try {
-
-        const profile = await fetchUserProfileWithRetry(3);
-
-        dispatch(setUserProfileId(profile.id));
-
-      } catch (err) {
-
-        showApiError(err);
-
-        dispatch(setStep(3));
-
-      } finally {
-
-        setIsLoading(false);
-
-      }
-
-    };
-
-
-
-    void fetchProfile();
-
-  }, [step, partnerType, isOtpVerified, userProfileId, dispatch]);
-
-
-
   const resetToPartnerTypeSelection = () => {
 
     dispatch(resetPartnerRegistration());
@@ -334,7 +280,7 @@ function PartnerRegister() {
 
         confirmPassword: data.confirmPassword,
 
-        role: ADMIN_ROLE,
+        role: ORG_ADMIN_ROLE,
 
         address: data.address || undefined,
 
@@ -360,11 +306,22 @@ function PartnerRegister() {
 
 
 
+  const resolvePreferredGenreLabel = (genreValue: string): string => {
+    const match = ORGANIZATION_GENRE_OPTIONS.find(
+      option => option.value === genreValue
+    );
+    return match?.label ?? genreValue;
+  };
+
+
+
   const handleOrganizationProfileSubmit = async (
 
     data: RegisterOrganizationFormData
 
   ) => {
+
+    const preferredGenre = resolvePreferredGenreLabel(data.preferredGenre);
 
     dispatch(
 
@@ -376,27 +333,13 @@ function PartnerRegister() {
 
         teamSize: data.teamSize,
 
-        preferredGenreId: data.preferredGenreId,
+        preferredGenre,
 
         image: data.image,
 
       })
 
     );
-
-
-
-    if (!userProfileId) {
-
-      showApiError({
-
-        message: 'User profile is missing. Please go back and verify your email.',
-
-      });
-
-      return;
-
-    }
 
 
 
@@ -412,11 +355,9 @@ function PartnerRegister() {
 
         teamSize: data.teamSize,
 
-        preferredGenreId: data.preferredGenreId,
+        preferredGenre,
 
         image: data.image ?? undefined,
-
-        userProfileId,
 
       });
 
@@ -488,7 +429,7 @@ function PartnerRegister() {
 
         lastName: individualDetails.lastName,
 
-        address: individualDetails.address || undefined,
+        address: individualDetails.address,
 
         contact: individualDetails.contact || undefined,
 
@@ -577,6 +518,8 @@ function PartnerRegister() {
       if (partnerType === 'individual') {
 
         dispatch(setIsOtpVerified(true));
+
+        await storeAuthorSlugAfterRegistration();
 
         await endSessionAndRedirectToLogin(
 

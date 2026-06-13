@@ -20,28 +20,31 @@ export interface UserProfileResponse {
   message?: string;
 }
 
-export interface CreateOrganizationRequest {
-  name: string;
-  websiteUrl?: string;
-  teamSize?: TeamSize;
-  preferredGenreId?: string;
-  image?: File;
-  userProfileId?: string;
-}
-
 export interface OrganizationItem {
   id: string;
   name: string;
-  slug?: string;
+  slug: string;
   description?: string;
+  image?: string | null;
+  preferredGenre?: string | null;
+  websiteUrl?: string | null;
+  teamSize?: TeamSize | null;
+  memberCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
+export interface CreateOrganizationRequest {
+  name: string;
+  websiteUrl?: string;
+  teamSize?: TeamSize;
+  preferredGenre?: string;
+  image?: File;
+}
+
 export interface CreateOrganizationResponse {
-  success: boolean;
-  data: OrganizationItem;
   message?: string;
+  organization: OrganizationItem;
 }
 
 export interface RegisterRequest {
@@ -49,7 +52,6 @@ export interface RegisterRequest {
   password: string;
   confirmPassword: string;
   role?: string;
-  type?: string;
   firstName?: string;
   lastName?: string;
   address?: string;
@@ -57,12 +59,18 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  token?: string;
-  accessToken?: string;
   message?: string;
+  otpSent?: boolean;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    emailVerified: boolean;
+  };
 }
 
 export type VerifyRegistrationOtpType = 'organization' | 'author';
+
 export interface VerifyRegistrationOtpRequest {
   email: string;
   otp: string;
@@ -76,6 +84,12 @@ export interface VerifyRegistrationOtpResponse {
   accessToken?: string;
   refreshToken?: string;
   message?: string;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    emailVerified: boolean;
+  };
 }
 
 export interface RegisterPartnerUserInput {
@@ -93,7 +107,7 @@ export interface RegisterIndividualInput {
   confirmPassword: string;
   firstName: string;
   lastName: string;
-  address?: string;
+  address: string;
   contact?: string;
   profileImage?: File;
 }
@@ -102,7 +116,30 @@ export interface CompletePartnerOrganizationInput {
   organizationName: string;
   websiteUrl?: string;
   teamSize?: TeamSize;
-  preferredGenreId?: string;
+  preferredGenre?: string;
   image?: File;
-  userProfileId?: string;
+}
+
+export interface OrganizationMemberDto {
+  id: string;
+  userId: string;
+  organizationId: string;
+  role: string;
+  joinedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  organization?: OrganizationItem;
+}
+
+export interface AuthorProfileDto {
+  id: string;
+  userId: string;
+  slug: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  address?: string | null;
+  contact?: string | null;
+  organizations?: Array<{ id: string; name: string; slug: string }>;
+  createdAt?: string;
+  updatedAt?: string;
 }

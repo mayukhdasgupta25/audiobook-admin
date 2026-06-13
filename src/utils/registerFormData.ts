@@ -13,9 +13,6 @@ export function buildRegisterFormData(input: RegisterFormDataInput): FormData {
   if (input.role) {
     formData.append('role', input.role);
   }
-  if (input.type) {
-    formData.append('type', input.type);
-  }
   if (input.firstName?.trim()) {
     formData.append('firstName', input.firstName.trim());
   }

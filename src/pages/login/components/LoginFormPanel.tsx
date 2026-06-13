@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, Shield } from 'lucide-react';
 import { useAppDispatch } from '../../../hooks/redux';
@@ -10,8 +10,14 @@ import {
   setAuthenticated as setAuthRedux,
   setUserRole,
   setUser,
+  setAppType,
+  setWorkspaceSlug,
 } from '../../../store/slices/authSlice';
 import { getUserRoleFromAuthResponse } from '../../../utils/authRole';
+import {
+  getStoredWorkspaceSlug,
+  setStoredWorkspaceSlug,
+} from '../../../utils/workspaceSlug';
 import type { LoginRequest, LoginResponse } from '../../../types/auth';
 import { showApiError } from '../../../utils/toast';
 import { validateEmail } from '../../../utils/validation';
@@ -22,6 +28,7 @@ function LoginFormPanel() {
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [slug, setSlug] = useState(() => getStoredWorkspaceSlug());
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +57,10 @@ function LoginFormPanel() {
         clientType: 'browser',
         device: getBrowserDeviceInfo(),
       };
+      const trimmedSlug = slug.trim();
+      if (trimmedSlug) {
+        loginData.slug = trimmedSlug;
+      }
 
       const loginResponse: LoginResponse = await login(loginData);
       setAuthenticated(true);
@@ -57,6 +68,17 @@ function LoginFormPanel() {
       const role = getUserRoleFromAuthResponse(loginResponse);
       if (role) {
         dispatch(setUserRole(role));
+      }
+      if (loginResponse.appType) {
+        dispatch(setAppType(loginResponse.appType));
+      } else {
+        dispatch(setAppType(null));
+      }
+      if (trimmedSlug) {
+        setStoredWorkspaceSlug(trimmedSlug);
+        dispatch(setWorkspaceSlug(trimmedSlug));
+      } else {
+        dispatch(setWorkspaceSlug(null));
       }
       if (loginResponse.user) {
         dispatch(setUser({ email: loginResponse.user.email }));
@@ -124,6 +146,22 @@ function LoginFormPanel() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="workspace-slug">Workspace slug</label>
+            <input
+              id="workspace-slug"
+              type="text"
+              value={slug}
+              onChange={e => setSlug(e.target.value)}
+              placeholder="your-org-slug or author-slug"
+              disabled={isLoading}
+            />
+            <p className="login-slug-hint">
+              Organization admins: use your organization slug. Authors: use your
+              author slug. Optional, but recommended for the correct workspace.
+            </p>
           </div>
 
           <div className="login-form-options">

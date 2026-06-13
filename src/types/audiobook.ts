@@ -117,6 +117,16 @@ export interface ChapterFormData {
 }
 
 /**
+ * Audiobook owner reference for create/update payloads
+ */
+export type AudioBookOwnerType = 'AUTHOR' | 'ORGANIZATION';
+
+export interface AudioBookOwnerInput {
+  type: AudioBookOwnerType;
+  id: string;
+}
+
+/**
  * Create Audiobook request payload
  */
 export interface CreateAudiobookRequest {
@@ -126,7 +136,7 @@ export interface CreateAudiobookRequest {
   description: string;
   genreIds: string[];
   tagIds: string[];
-  organizationId?: string;
+  owner?: AudioBookOwnerInput;
   duration: number;
   fileSize: number;
   language?: string;

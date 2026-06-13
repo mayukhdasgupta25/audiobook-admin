@@ -21,12 +21,12 @@ import {
 import type { AudiobookApiResponse, AudiobookWizardData } from '../../types/audiobook';
 import {
   getMoods,
-  getOrganizations,
   getSubscriptionPlans,
   type MoodItem,
   type SubscriptionPlanItem,
 } from '../../utils/audiobookApi';
-import { isPartnerApp } from '../../utils/config';
+import { resolveAudiobookOwner } from '../../utils/resolveAudiobookOwner';
+import type { AudioBookOwnerInput } from '../../types/audiobook';
 import { showApiError } from '../../utils/toast';
 import {
   buildCreateAudiobookRequest,
@@ -68,7 +68,7 @@ function AudiobookWizard() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const partnerApp = isPartnerApp();
+  const { role, appType } = useAppSelector(state => state.auth);
   const mode = id ? 'edit' : 'create';
 
   const { genres, loading: genresLoading } = useAppSelector(
@@ -88,8 +88,10 @@ function AudiobookWizard() {
     Partial<Record<keyof AudiobookWizardData | 'scheduledAt', string>>
   >({});
   const [draftSaved, setDraftSaved] = useState(false);
-  const [organizationId, setOrganizationId] = useState('');
-  const [organizationError, setOrganizationError] = useState('');
+  const [audiobookOwner, setAudiobookOwner] = useState<AudioBookOwnerInput | null>(
+    null
+  );
+  const [ownerError, setOwnerError] = useState('');
   const [moods, setMoods] = useState<MoodItem[]>([]);
   const [moodsLoading, setMoodsLoading] = useState(false);
   const [subscriptionPlans, setSubscriptionPlans] = useState<
@@ -114,27 +116,26 @@ function AudiobookWizard() {
   }, [mode, editingAudiobook, genres, tags]);
 
   useEffect(() => {
-    if (partnerApp || mode === 'edit') {
+    if (mode === 'edit') {
       return;
     }
 
-    const fetchOrganization = async () => {
+    const fetchOwner = async () => {
       try {
-        const memberships = await getOrganizations();
-        const membership = memberships[0];
-        if (membership?.organization) {
-          setOrganizationId(membership.organization.id);
+        const owner = await resolveAudiobookOwner(role, appType);
+        if (owner) {
+          setAudiobookOwner(owner);
         } else {
-          setOrganizationError('No organization found for your account');
+          setOwnerError('No organization or author workspace found for your account');
         }
       } catch (error) {
         showApiError(error);
-        setOrganizationError('Failed to load organization');
+        setOwnerError('Failed to resolve audiobook owner');
       }
     };
 
-    void fetchOrganization();
-  }, [partnerApp, mode]);
+    void fetchOwner();
+  }, [mode, role, appType]);
 
   useEffect(() => {
     const fetchWizardCatalogData = async () => {
@@ -219,11 +220,11 @@ function AudiobookWizard() {
 
     if (
       Object.keys(validationErrors).length > 0 ||
-      (mode === 'create' && !partnerApp && !organizationId)
+      (mode === 'create' && !audiobookOwner)
     ) {
       setErrors(validationErrors);
-      if (!partnerApp && !organizationId && mode === 'create') {
-        setOrganizationError('Organization is required');
+      if (!audiobookOwner && mode === 'create') {
+        setOwnerError('Audiobook owner is required');
       }
       return;
     }
@@ -238,7 +239,7 @@ function AudiobookWizard() {
           createAudiobookThunk(
             buildCreateAudiobookRequest(
               submissionData,
-              partnerApp ? undefined : organizationId
+              audiobookOwner ?? undefined
             )
           )
         ).unwrap();
@@ -295,8 +296,8 @@ function AudiobookWizard() {
       showContinue={step < 4}
       showPublishActions={step === 4}
     >
-      {organizationError && step === 1 && mode === 'create' && !partnerApp && (
-        <p className="wizard-field-error">{organizationError}</p>
+      {ownerError && step === 1 && mode === 'create' && (
+        <p className="wizard-field-error">{ownerError}</p>
       )}
 
       {step === 1 && (

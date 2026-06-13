@@ -16,23 +16,14 @@ describe('buildOrganizationFormData', () => {
       organizationName: 'Acme Audio',
       websiteUrl: 'https://acme.example',
       teamSize: '11-50',
-      preferredGenreId: 'genre-123',
+      preferredGenre: 'Fantasy',
       image,
     });
 
     expect(formData.get('websiteUrl')).toBe('https://acme.example');
     expect(formData.get('teamSize')).toBe('11-50');
-    expect(formData.get('preferredGenreId')).toBe('genre-123');
+    expect(formData.get('preferredGenre')).toBe('Fantasy');
     expect(formData.get('image')).toBe(image);
-  });
-
-  it('includes userProfileId when provided', () => {
-    const formData = buildOrganizationFormData({
-      organizationName: 'Acme Audio',
-      userProfileId: 'profile-abc-123',
-    });
-
-    expect(formData.get('userProfileId')).toBe('profile-abc-123');
   });
 
   it('omits blank optional fields', () => {
@@ -43,7 +34,7 @@ describe('buildOrganizationFormData', () => {
 
     expect(formData.get('websiteUrl')).toBeNull();
     expect(formData.get('teamSize')).toBeNull();
-    expect(formData.get('preferredGenreId')).toBeNull();
+    expect(formData.get('preferredGenre')).toBeNull();
     expect(formData.get('image')).toBeNull();
   });
 });

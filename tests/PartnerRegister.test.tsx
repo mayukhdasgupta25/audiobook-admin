@@ -36,7 +36,13 @@ vi.mock('../src/utils/partnerApi', () => ({
 
   verifyRegistrationOtp: vi.fn().mockResolvedValue({ accessToken: 'access-token' }),
 
-  completePartnerOrganizationSetup: vi.fn().mockResolvedValue(undefined),
+  completePartnerOrganizationSetup: vi.fn().mockResolvedValue({
+    id: 'org-1',
+    name: 'Acme Audio',
+    slug: 'acme-audio-abc123',
+  }),
+
+  storeAuthorSlugAfterRegistration: vi.fn().mockResolvedValue(undefined),
 
 }));
 
@@ -371,7 +377,7 @@ describe('PartnerRegister organization flow', () => {
 
 
 
-  it('calls register after account step and fetches profile on organization step entry', async () => {
+  it('calls register after account step and shows organization step after OTP', async () => {
 
     const user = userEvent.setup();
 
@@ -384,18 +390,6 @@ describe('PartnerRegister organization flow', () => {
       verifyRegistrationOtp,
 
     } = await import('../src/utils/partnerApi');
-
-
-
-    let resolveProfile: (value: { id: string }) => void;
-
-    const profilePromise = new Promise<{ id: string }>(resolve => {
-
-      resolveProfile = resolve;
-
-    });
-
-    vi.mocked(fetchUserProfileWithRetry).mockReturnValueOnce(profilePromise);
 
 
 
@@ -417,7 +411,7 @@ describe('PartnerRegister organization flow', () => {
 
         confirmPassword: 'Secure1pass!',
 
-        role: 'ADMIN',
+        role: 'ORG_ADMIN',
 
         address: '123 Publisher Lane',
 
@@ -459,25 +453,7 @@ describe('PartnerRegister organization flow', () => {
 
     });
 
-    expect(fetchUserProfileWithRetry).toHaveBeenCalledWith(3);
-
-    expect(store.getState().partnerRegistration.userProfileId).toBe('');
-
-
-
-    resolveProfile!({ id: 'profile-123' });
-
-
-
-    await waitFor(() => {
-
-      expect(store.getState().partnerRegistration.userProfileId).toBe(
-
-        'profile-123'
-
-      );
-
-    });
+    expect(fetchUserProfileWithRetry).not.toHaveBeenCalled();
 
   });
 
@@ -569,7 +545,7 @@ describe('PartnerRegister organization flow', () => {
 
         confirmPassword: 'Secure1pass!',
 
-        role: 'ADMIN',
+        role: 'ORG_ADMIN',
 
         address: '123 Publisher Lane',
 
@@ -854,6 +830,8 @@ describe('PartnerRegister individual flow', () => {
 
       verifyRegistrationOtp,
 
+      storeAuthorSlugAfterRegistration,
+
     } = await import('../src/utils/partnerApi');
 
     const { endSessionAndRedirectToLogin } = await import('../src/utils/authSession');
@@ -917,6 +895,8 @@ describe('PartnerRegister individual flow', () => {
     });
 
     expect(fetchUserProfileWithRetry).not.toHaveBeenCalled();
+
+    expect(storeAuthorSlugAfterRegistration).toHaveBeenCalled();
 
     expect(endSessionAndRedirectToLogin).toHaveBeenCalled();
 

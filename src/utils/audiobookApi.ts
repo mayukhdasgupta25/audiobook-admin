@@ -17,7 +17,6 @@ import {
   handleApiError,
 } from './config';
 import { normalizeHexColor } from './colorUtils';
-import { buildAuthorFormData } from './authorFormData';
 import { getAccessToken } from './token';
 
 /**
@@ -169,25 +168,21 @@ export interface OrganizationItem {
  */
 export interface UserOrganizationMembership {
   id: string;
-  userProfileId: string;
+  userId: string;
   organizationId: string;
   role: string;
   joinedAt: string;
   createdAt: string;
   updatedAt: string;
-  organization: OrganizationItem;
+  organization?: OrganizationItem;
 }
 
 /**
- * API response structure for organizations
+ * API response structure for organizations from auth-service
  */
-export interface OrganizationsResponse {
-  success: boolean;
-  data: UserOrganizationMembership[];
+export interface OrganizationsAuthResponse {
   message: string;
-  statusCode: number;
-  timestamp: string;
-  path: string;
+  organizations: UserOrganizationMembership[];
 }
 
 /**
@@ -232,7 +227,7 @@ export async function getOrganizations(): Promise<
     const headers = getAuthHeaders();
 
     const response = await fetch(
-      `${getContentApiBaseUrl()}/api/v1/organizations`,
+      `${getAuthApiBaseUrl()}/auth/organizations`,
       {
         method: 'GET',
         headers,
@@ -250,8 +245,8 @@ export async function getOrganizations(): Promise<
       throw error;
     }
 
-    const organizationsResponse = data as OrganizationsResponse;
-    return organizationsResponse.data;
+    const organizationsResponse = data as OrganizationsAuthResponse;
+    return organizationsResponse.organizations ?? [];
   } catch (error) {
     throw handleApiError(error);
   }
@@ -716,49 +711,37 @@ export async function deleteTag(id: string): Promise<void> {
  */
 export interface AuthorItem {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  address?: string;
-  contact?: string;
-  createdAt: string;
-  updatedAt: string;
+  userId: string;
+  slug: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  address?: string | null;
+  contact?: string | null;
+  organizations?: Array<{ id: string; name: string; slug: string }>;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-/**
- * API response structure for authors
- */
-export interface AuthorsResponse {
-  success: boolean;
-  data: AuthorItem[];
+interface AuthorsAuthResponse {
   message: string;
-  statusCode: number;
-  timestamp: string;
-  path: string;
+  authors: AuthorItem[];
 }
 
-/**
- * API response structure for a single author
- */
-export interface AuthorResponse {
-  success: boolean;
-  data: AuthorItem;
+interface AuthorAuthResponse {
   message: string;
-  statusCode: number;
-  timestamp: string;
-  path: string;
+  author: AuthorItem;
 }
 
 /**
- * Request interface for creating an author
+ * Request interface for creating an author (auth-service)
  */
 export interface CreateAuthorRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
+  userId: string;
+  firstName?: string;
+  lastName?: string;
   address?: string;
   contact?: string;
-  profileImage?: File;
+  organizationIds?: string[];
 }
 
 /**
@@ -767,20 +750,26 @@ export interface CreateAuthorRequest {
 export interface UpdateAuthorRequest {
   firstName?: string;
   lastName?: string;
-  email?: string;
   address?: string;
   contact?: string;
+  organizationIds?: string[];
 }
 
+function getAuthorDisplayName(author: AuthorItem): string {
+  const parts = [author.firstName, author.lastName].filter(Boolean);
+  return parts.length > 0 ? parts.join(' ') : author.slug;
+}
+
+export { getAuthorDisplayName };
+
 /**
- * Fetches authors from the API
- * @returns Promise resolving to authors response or throwing an error
+ * Fetches authors from auth-service
  */
 export async function getAuthors(): Promise<AuthorItem[]> {
   try {
     const headers = getAuthHeaders();
 
-    const response = await fetch(`${getContentApiBaseUrl()}/api/v1/authors`, {
+    const response = await fetch(`${getAuthApiBaseUrl()}/auth/authors`, {
       method: 'GET',
       headers,
     });
@@ -796,40 +785,26 @@ export async function getAuthors(): Promise<AuthorItem[]> {
       throw error;
     }
 
-    const authorsResponse = data as AuthorsResponse;
-    return authorsResponse.data;
+    const authorsResponse = data as AuthorsAuthResponse;
+    return authorsResponse.authors ?? [];
   } catch (error) {
     throw handleApiError(error);
   }
 }
 
 /**
- * Creates a new author
- * @param authorData - Author data to create
- * @returns Promise resolving to created author or throwing an error
+ * Creates a new author record for an existing AUTHOR user
  */
 export async function createAuthor(
   authorData: CreateAuthorRequest
 ): Promise<AuthorItem> {
   try {
-    const useMultipart = Boolean(authorData.profileImage);
-    const headers = useMultipart
-      ? getAuthHeadersForFileUpload()
-      : getAuthHeaders();
-    const body = useMultipart
-      ? buildAuthorFormData(authorData)
-      : JSON.stringify({
-          firstName: authorData.firstName,
-          lastName: authorData.lastName,
-          email: authorData.email,
-          address: authorData.address,
-          contact: authorData.contact,
-        });
+    const headers = getAuthHeaders();
 
-    const response = await fetch(`${getContentApiBaseUrl()}/api/v1/authors/`, {
+    const response = await fetch(`${getAuthApiBaseUrl()}/auth/authors`, {
       method: 'POST',
       headers,
-      body,
+      body: JSON.stringify(authorData),
     });
 
     const data = await response.json();
@@ -843,8 +818,8 @@ export async function createAuthor(
       throw error;
     }
 
-    const authorResponse = data as AuthorResponse;
-    return authorResponse.data;
+    const authorResponse = data as AuthorAuthResponse;
+    return authorResponse.author;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -852,9 +827,6 @@ export async function createAuthor(
 
 /**
  * Updates an existing author
- * @param id - The ID of the author to update
- * @param authorData - Author data to update
- * @returns Promise resolving to updated author or throwing an error
  */
 export async function updateAuthor(
   id: string,
@@ -864,7 +836,7 @@ export async function updateAuthor(
     const headers = getAuthHeaders();
 
     const response = await fetch(
-      `${getContentApiBaseUrl()}/api/v1/authors/${id}`,
+      `${getAuthApiBaseUrl()}/auth/authors/${id}`,
       {
         method: 'PUT',
         headers,
@@ -883,8 +855,8 @@ export async function updateAuthor(
       throw error;
     }
 
-    const authorResponse = data as AuthorResponse;
-    return authorResponse.data;
+    const authorResponse = data as AuthorAuthResponse;
+    return authorResponse.author;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -892,22 +864,19 @@ export async function updateAuthor(
 
 /**
  * Deletes an author
- * @param id - The ID of the author to delete
- * @returns Promise resolving to success response or throwing an error
  */
 export async function deleteAuthor(id: string): Promise<void> {
   try {
     const headers = getAuthHeaders();
 
     const response = await fetch(
-      `${getContentApiBaseUrl()}/api/v1/authors/${id}`,
+      `${getAuthApiBaseUrl()}/auth/authors/${id}`,
       {
         method: 'DELETE',
         headers,
       }
     );
 
-    // DELETE requests may return empty body (204 No Content) or JSON
     let data: ApiError | null = null;
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
@@ -916,7 +885,6 @@ export async function deleteAuthor(id: string): Promise<void> {
         try {
           data = JSON.parse(text) as ApiError;
         } catch {
-          // Empty or invalid JSON - treat as success if status is ok
           data = null;
         }
       }
@@ -930,9 +898,7 @@ export async function deleteAuthor(id: string): Promise<void> {
       };
       throw error;
     }
-    // Success - DELETE operations may return empty body
   } catch (error) {
-    // Only re-throw if it's not already an ApiError
     if (
       error &&
       typeof error === 'object' &&
@@ -984,8 +950,8 @@ export async function createAudiobook(
       if (audiobookData.language) {
         formData.append('language', audiobookData.language);
       }
-      if (audiobookData.organizationId) {
-        formData.append('organizationId', audiobookData.organizationId);
+      if (audiobookData.owner) {
+        formData.append('owner', JSON.stringify(audiobookData.owner));
       }
 
       // Send genreIds as JSON array string

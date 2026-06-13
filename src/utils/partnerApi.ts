@@ -1,8 +1,10 @@
 import type { ApiError } from '../types/auth';
 import type {
+  AuthorProfileDto,
   CompletePartnerOrganizationInput,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
+  OrganizationItem,
   RegisterIndividualInput,
   RegisterPartnerUserInput,
   RegisterRequest,
@@ -24,7 +26,9 @@ import {
   buildRegisterFormData,
   type RegisterFormDataInput,
 } from './registerFormData';
+import { setStoredWorkspaceSlug } from './workspaceSlug';
 import { setAccessToken } from './token';
+
 function getPublicJsonHeaders(): HeadersInit {
   return {
     'Content-Type': 'application/json',
@@ -40,24 +44,24 @@ function storeTokenFromResponse(
     setAccessToken(response.token);
   }
 }
+
 /**
- * Creates a new organization
+ * Creates a new organization on auth-service
  */
 export async function createOrganization(
   payload: CreateOrganizationRequest
-): Promise<CreateOrganizationResponse['data']> {
+): Promise<OrganizationItem> {
   try {
     const formData = buildOrganizationFormData({
       organizationName: payload.name,
       websiteUrl: payload.websiteUrl,
       teamSize: payload.teamSize,
-      preferredGenreId: payload.preferredGenreId,
+      preferredGenre: payload.preferredGenre,
       image: payload.image,
-      userProfileId: payload.userProfileId,
     });
     const headers = getAuthHeadersForFileUpload();
     const response = await fetch(
-      `${getContentApiBaseUrl()}/api/v1/organizations`,
+      `${getAuthApiBaseUrl()}/auth/organizations`,
       {
         method: 'POST',
         headers,
@@ -75,11 +79,15 @@ export async function createOrganization(
     }
 
     const orgResponse = data as CreateOrganizationResponse;
-    return orgResponse.data;
+    if (orgResponse.organization?.slug) {
+      setStoredWorkspaceSlug(orgResponse.organization.slug);
+    }
+    return orgResponse.organization;
   } catch (error) {
     throw handleApiError(error);
   }
 }
+
 /**
  * Registers a new user
  */
@@ -87,14 +95,18 @@ export async function registerUser(
   payload: RegisterFormDataInput
 ): Promise<RegisterResponse> {
   try {
-    const useMultipart = Boolean(payload.profileImage);
+    const isAuthorRegistration = payload.role === 'AUTHOR';
+    const useMultipart = isAuthorRegistration || Boolean(payload.profileImage);
     const { profileImage, ...jsonPayload } = payload;
     void profileImage;
+
     const response = await fetch(`${getAuthApiBaseUrl()}/auth/register`, {
       method: 'POST',
       credentials: 'include',
       headers: useMultipart ? {} : getPublicJsonHeaders(),
-      body: useMultipart ? buildRegisterFormData(payload) : JSON.stringify(jsonPayload),
+      body: useMultipart
+        ? buildRegisterFormData(payload)
+        : JSON.stringify(jsonPayload),
     });
     const data = await response.json();
     if (!response.ok) {
@@ -111,6 +123,7 @@ export async function registerUser(
     throw handleApiError(error);
   }
 }
+
 /**
  * Verifies registration OTP
  */
@@ -156,10 +169,51 @@ export async function verifyRegistrationOtp(
     throw handleApiError(error);
   }
 }
+
+/**
+ * Fetches the authenticated author's profile from auth-service
+ */
+export async function getMyAuthorProfile(): Promise<AuthorProfileDto> {
+  try {
+    const headers = getAuthHeaders();
+    const response = await fetch(`${getAuthApiBaseUrl()}/auth/authors/me`, {
+      method: 'GET',
+      headers,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      const error: ApiError = {
+        message: data.message || data.error || 'Failed to fetch author profile',
+        error: data.error,
+        statusCode: response.status,
+      };
+      throw error;
+    }
+
+    return (data as { author: AuthorProfileDto }).author;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+
+/**
+ * Persists author slug after registration before logout
+ */
+export async function storeAuthorSlugAfterRegistration(): Promise<void> {
+  try {
+    const author = await getMyAuthorProfile();
+    if (author.slug) {
+      setStoredWorkspaceSlug(author.slug);
+    }
+  } catch {
+    // slug can be entered manually at login if fetch fails
+  }
+}
+
 const PROFILE_RETRY_DELAY_MS = 500;
 
 /**
- * Fetches the authenticated user's profile
+ * Fetches the authenticated user's profile from app-service
  */
 export async function getUserProfile(): Promise<UserProfile> {
   try {
@@ -211,11 +265,13 @@ export async function fetchUserProfileWithRetry(
     }
   }
 
-  throw lastError ?? {
-    message: 'Failed to fetch user profile',
-    error: 'ProfileNotFound',
-    statusCode: 404,
-  };
+  throw (
+    lastError ?? {
+      message: 'Failed to fetch user profile',
+      error: 'ProfileNotFound',
+      statusCode: 404,
+    }
+  );
 }
 
 /**
@@ -239,8 +295,9 @@ export async function registerPartnerUser(
   await registerUser(body);
   return input.email.trim();
 }
+
 /**
- * Registers an individual author partner with personal details and type AUTHOR
+ * Registers an individual author partner with personal details and role AUTHOR
  */
 export async function registerIndividualPartner(
   input: RegisterIndividualInput
@@ -249,13 +306,11 @@ export async function registerIndividualPartner(
     email: input.email.trim(),
     password: input.password,
     confirmPassword: input.confirmPassword,
-    type: 'AUTHOR',
+    role: 'AUTHOR',
     firstName: input.firstName.trim(),
     lastName: input.lastName.trim(),
+    address: input.address.trim(),
   };
-  if (input.address?.trim()) {
-    body.address = input.address.trim();
-  }
   if (input.contact?.trim()) {
     body.contact = input.contact.trim();
   }
@@ -265,18 +320,18 @@ export async function registerIndividualPartner(
   await registerUser(body);
   return input.email.trim();
 }
+
 /**
- * Creates organization (members are created by the backend on org creation)
+ * Creates organization after OTP verification
  */
 export async function completePartnerOrganizationSetup(
   input: CompletePartnerOrganizationInput
-): Promise<void> {
-  await createOrganization({
+): Promise<OrganizationItem> {
+  return createOrganization({
     name: input.organizationName.trim(),
     websiteUrl: input.websiteUrl,
     teamSize: input.teamSize,
-    preferredGenreId: input.preferredGenreId,
+    preferredGenre: input.preferredGenre,
     image: input.image,
-    userProfileId: input.userProfileId,
   });
 }

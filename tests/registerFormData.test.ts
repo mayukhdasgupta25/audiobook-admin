@@ -7,7 +7,7 @@ describe('buildRegisterFormData', () => {
       email: 'author@example.com',
       password: 'Secure1pass',
       confirmPassword: 'Secure1pass',
-      type: 'AUTHOR',
+      role: 'AUTHOR',
       firstName: 'Jane',
       lastName: 'Author',
     });
@@ -15,7 +15,7 @@ describe('buildRegisterFormData', () => {
     expect(formData.get('email')).toBe('author@example.com');
     expect(formData.get('password')).toBe('Secure1pass');
     expect(formData.get('confirmPassword')).toBe('Secure1pass');
-    expect(formData.get('type')).toBe('AUTHOR');
+    expect(formData.get('role')).toBe('AUTHOR');
     expect(formData.get('firstName')).toBe('Jane');
     expect(formData.get('lastName')).toBe('Author');
   });
@@ -28,7 +28,7 @@ describe('buildRegisterFormData', () => {
       email: 'author@example.com',
       password: 'Secure1pass',
       confirmPassword: 'Secure1pass',
-      type: 'AUTHOR',
+      role: 'AUTHOR',
       firstName: 'Jane',
       lastName: 'Author',
       profileImage,
@@ -42,7 +42,7 @@ describe('buildRegisterFormData', () => {
       email: 'author@example.com',
       password: 'Secure1pass',
       confirmPassword: 'Secure1pass',
-      type: 'AUTHOR',
+      role: 'AUTHOR',
       firstName: 'Jane',
       lastName: 'Author',
       address: '   ',

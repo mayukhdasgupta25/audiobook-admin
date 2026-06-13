@@ -42,13 +42,17 @@ async function authPost(
  */
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   try {
-    const response = await authPost('/auth/login', {
+    const loginBody: Record<string, unknown> = {
       email: credentials.email,
       password: credentials.password,
       clientType: credentials.clientType,
       device: credentials.device,
       app: 'partner',
-    });
+    };
+    if (credentials.slug?.trim()) {
+      loginBody.slug = credentials.slug.trim();
+    }
+    const response = await authPost('/auth/login', loginBody);
     const data = await response.json();
     if (!response.ok) {
       const error: ApiError = {

@@ -33,6 +33,7 @@ import Button from '../../components/common/Button';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Pagination from '../../components/common/Pagination';
 import { showApiError } from '../../utils/toast';
+import { useChapterTranscodingEvents } from '../../hooks/useChapterTranscodingEvents';
 import '../../styles/pages/chapters/Chapters.css';
 
 const Chapters: React.FC = () => {
@@ -56,6 +57,9 @@ const Chapters: React.FC = () => {
     chapterId: string;
     newChapterNumber: number;
   } | null>(null);
+
+  const chapterIds = localChapters.map(chapter => chapter.id);
+  const { statusByChapter } = useChapterTranscodingEvents(chapterIds);
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -390,6 +394,7 @@ const Chapters: React.FC = () => {
                   <ChapterCard
                     key={chapter.id}
                     chapter={chapter}
+                    transcodingStatus={statusByChapter[chapter.id]}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                   />

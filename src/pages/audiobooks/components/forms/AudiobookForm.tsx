@@ -16,9 +16,9 @@ import {
 import type {
   AudiobookFormData,
   AudiobookApiResponse,
+  AudioBookOwnerInput,
 } from '../../../../types/audiobook';
-import { isPartnerApp } from '../../../../utils/config';
-import { getOrganizations } from '../../../../utils/audiobookApi';
+import { resolveAudiobookOwner } from '../../../../utils/resolveAudiobookOwner';
 import Button from '../../../../components/common/Button';
 import { showApiError } from '../../../../utils/toast';
 import { DEFAULT_AUDIOBOOK_LANGUAGE } from '../../../../utils/audiobookWizard';
@@ -45,8 +45,8 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
   const { loading: isCreating, filter } = useAppSelector(
     state => state.audiobooks
   );
+  const { role, appType } = useAppSelector(state => state.auth);
   const isEditMode = !!audiobookId && !!initialData;
-  const partnerApp = isPartnerApp();
 
   // Initialize form data from initialData if provided
   const getInitialFormData = (): AudiobookFormData => {
@@ -117,10 +117,12 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
     Partial<Record<keyof AudiobookFormData, string>>
   >({});
 
-  const [organizationId, setOrganizationId] = useState<string>('');
-  const [organizationName, setOrganizationName] = useState<string>('');
+  const [audiobookOwner, setAudiobookOwner] = useState<AudioBookOwnerInput | null>(
+    null
+  );
+  const [ownerLabel, setOwnerLabel] = useState<string>('');
   const [organizationsLoading, setOrganizationsLoading] = useState(false);
-  const [organizationError, setOrganizationError] = useState<string>('');
+  const [ownerError, setOwnerError] = useState<string>('');
 
   // Fetch genres and tags on mount
   useEffect(() => {
@@ -132,34 +134,34 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
     }
   }, [dispatch, genres.length, tags.length]);
 
-  // Fetch organization for create mode (non-partner apps only)
   useEffect(() => {
-    if (partnerApp || isEditMode) {
+    if (isEditMode) {
       return;
     }
 
-    const fetchOrganization = async () => {
+    const fetchOwner = async () => {
       setOrganizationsLoading(true);
-      setOrganizationError('');
+      setOwnerError('');
       try {
-        const memberships = await getOrganizations();
-        const membership = memberships[0];
-        if (membership?.organization) {
-          setOrganizationId(membership.organization.id);
-          setOrganizationName(membership.organization.name);
+        const owner = await resolveAudiobookOwner(role, appType);
+        if (owner) {
+          setAudiobookOwner(owner);
+          setOwnerLabel(
+            owner.type === 'AUTHOR' ? 'Author workspace' : 'Organization workspace'
+          );
         } else {
-          setOrganizationError('No organization found for your account');
+          setOwnerError('No organization or author workspace found for your account');
         }
       } catch (error) {
         showApiError(error);
-        setOrganizationError('Failed to load organization');
+        setOwnerError('Failed to resolve audiobook owner');
       } finally {
         setOrganizationsLoading(false);
       }
     };
 
-    fetchOrganization();
-  }, [partnerApp, isEditMode]);
+    void fetchOwner();
+  }, [isEditMode, role, appType]);
 
   // Update form data when initialData or genres/tags change (for edit mode)
   useEffect(() => {
@@ -232,13 +234,13 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
       newErrors.tags = 'At least one tag is required';
     }
 
-    if (!partnerApp && !isEditMode && !organizationId) {
-      setOrganizationError('Organization is required');
+    if (!isEditMode && !audiobookOwner) {
+      setOwnerError('Audiobook owner is required');
     }
 
     if (
       Object.keys(newErrors).length > 0 ||
-      (!partnerApp && !isEditMode && !organizationId)
+      (!isEditMode && !audiobookOwner)
     ) {
       setErrors(newErrors);
       return;
@@ -307,7 +309,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           description: formData.description.trim(),
           genreIds: formData.genres,
           tagIds: formData.tags,
-          ...(partnerApp ? {} : { organizationId }),
+          ...(audiobookOwner ? { owner: audiobookOwner } : {}),
           duration: 0,
           fileSize: 0,
           coverImage: formData.coverImage || undefined,
@@ -371,13 +373,13 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
       newErrors.scheduledAt = 'Schedule date and time is required';
     }
 
-    if (!partnerApp && !isEditMode && !organizationId) {
-      setOrganizationError('Organization is required');
+    if (!isEditMode && !audiobookOwner) {
+      setOwnerError('Audiobook owner is required');
     }
 
     if (
       Object.keys(newErrors).length > 0 ||
-      (!partnerApp && !isEditMode && !organizationId)
+      (!isEditMode && !audiobookOwner)
     ) {
       setErrors(newErrors);
       return;
@@ -446,7 +448,7 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           description: formData.description.trim(),
           genreIds: formData.genres,
           tagIds: formData.tags,
-          ...(partnerApp ? {} : { organizationId }),
+          ...(audiobookOwner ? { owner: audiobookOwner } : {}),
           duration: 0,
           fileSize: 0,
           coverImage: formData.coverImage || undefined,
@@ -716,22 +718,22 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
         )}
       </div>
 
-      {!partnerApp && !isEditMode && (
+      {!isEditMode && (
         <div className="form-group">
-          <label htmlFor="organization">Organization</label>
+          <label htmlFor="owner">Owner</label>
           <input
-            id="organization"
+            id="owner"
             type="text"
             value={
               organizationsLoading
-                ? 'Loading organization...'
-                : organizationName
+                ? 'Loading owner...'
+                : ownerLabel || audiobookOwner?.type || ''
             }
             readOnly
             className="readonly-input"
           />
-          {organizationError && (
-            <span className="error-message">{organizationError}</span>
+          {ownerError && (
+            <span className="error-message">{ownerError}</span>
           )}
         </div>
       )}

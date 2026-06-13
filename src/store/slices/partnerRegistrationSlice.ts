@@ -15,7 +15,7 @@ export interface OrganizationProfileData {
   organizationName: string;
   websiteUrl: string;
   teamSize: TeamSize | null;
-  preferredGenreId: string | null;
+  preferredGenre: string | null;
   image: File | null;
 }
 
@@ -58,7 +58,7 @@ const emptyOrganizationProfile: OrganizationProfileData = {
   organizationName: '',
   websiteUrl: '',
   teamSize: null,
-  preferredGenreId: null,
+  preferredGenre: null,
   image: null,
 };
 

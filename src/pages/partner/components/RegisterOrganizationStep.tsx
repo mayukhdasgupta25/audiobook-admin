@@ -36,7 +36,7 @@ export interface RegisterOrganizationFormData {
 
   teamSize: TeamSize;
 
-  preferredGenreId: string;
+  preferredGenre: string;
 
   image: File | null;
 
@@ -84,9 +84,9 @@ function RegisterOrganizationStep({
 
   );
 
-  const [preferredGenreId, setPreferredGenreId] = useState<string | null>(
+  const [preferredGenre, setPreferredGenre] = useState<string | null>(
 
-    initialData?.preferredGenreId ?? null
+    initialData?.preferredGenre ?? null
 
   );
 
@@ -130,7 +130,7 @@ function RegisterOrganizationStep({
 
     setTeamSize(initialData?.teamSize ?? null);
 
-    setPreferredGenreId(initialData?.preferredGenreId ?? null);
+    setPreferredGenre(initialData?.preferredGenre ?? null);
 
     setImage(initialData?.image ?? null);
 
@@ -148,7 +148,7 @@ function RegisterOrganizationStep({
 
       teamSize,
 
-      preferredGenreId,
+      preferredGenre,
 
       image,
 
@@ -204,9 +204,9 @@ function RegisterOrganizationStep({
 
 
 
-    if (!preferredGenreId) {
+    if (!preferredGenre) {
 
-      errors.preferredGenreId = 'Please select a primary genre';
+      errors.preferredGenre = 'Please select a primary genre';
 
     }
 
@@ -232,7 +232,7 @@ function RegisterOrganizationStep({
 
       teamSize: teamSize as TeamSize,
 
-      preferredGenreId: preferredGenreId as string,
+      preferredGenre: preferredGenre as string,
 
       image,
 
@@ -400,7 +400,7 @@ function RegisterOrganizationStep({
 
             className={`partner-form-group${
 
-              fieldErrors.preferredGenreId ? ' partner-form-group--error' : ''
+              fieldErrors.preferredGenre ? ' partner-form-group--error' : ''
 
             }`}
 
@@ -412,7 +412,7 @@ function RegisterOrganizationStep({
 
               Primary genre / catalog focus
 
-              <FieldErrorHint message={fieldErrors.preferredGenreId} />
+              <FieldErrorHint message={fieldErrors.preferredGenre} />
 
             </label>
 
@@ -424,13 +424,13 @@ function RegisterOrganizationStep({
 
               options={[...ORGANIZATION_GENRE_OPTIONS]}
 
-              value={preferredGenreId}
+              value={preferredGenre}
 
               onChange={value => {
 
-                setPreferredGenreId(value);
+                setPreferredGenre(value);
 
-                clearFieldError('preferredGenreId');
+                clearFieldError('preferredGenre');
 
               }}
 

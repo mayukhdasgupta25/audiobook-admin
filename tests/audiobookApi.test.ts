@@ -302,4 +302,27 @@ describe('audiobook API paid and mood payloads', () => {
     expect(formData.get('minSubscriptionTier')).toBe('3');
     expect(formData.get('moodId')).toBe('mood-2');
   });
+
+  it('includes owner as JSON string in FormData create payload', async () => {
+    const coverImage = new File(['cover'], 'cover.png', { type: 'image/png' });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { id: 'ab-3', title: 'Test Audiobook' },
+      }),
+    } as Response);
+
+    await createAudiobook({
+      ...baseCreatePayload,
+      coverImage,
+      owner: { type: 'ORGANIZATION', id: 'org-123' },
+    });
+
+    const [, request] = fetchMock.mock.calls[0];
+    const formData = (request as RequestInit).body as FormData;
+    expect(formData.get('owner')).toBe(
+      JSON.stringify({ type: 'ORGANIZATION', id: 'org-123' })
+    );
+  });
 });

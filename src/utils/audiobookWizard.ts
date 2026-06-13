@@ -208,7 +208,7 @@ function buildPaidAndMoodFields(data: AudiobookFormData): {
 
 export function buildCreateAudiobookRequest(
   data: AudiobookFormData,
-  organizationId?: string
+  owner?: { type: 'ORGANIZATION' | 'AUTHOR'; id: string }
 ): CreateAudiobookRequest {
   const filteredMeta = filterAudiobookMeta(data.meta);
 
@@ -222,7 +222,7 @@ export function buildCreateAudiobookRequest(
     description: data.description.trim(),
     genreIds: data.genres,
     tagIds: data.tags,
-    ...(organizationId ? { organizationId } : {}),
+    ...(owner ? { owner } : {}),
     duration: 0,
     fileSize: 0,
     language: data.language.trim() || DEFAULT_AUDIOBOOK_LANGUAGE,

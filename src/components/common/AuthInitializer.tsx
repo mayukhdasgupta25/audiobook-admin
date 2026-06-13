@@ -10,9 +10,12 @@ import {
   setAuthInitialized,
   setUserRole,
   setUser,
+  setAppType,
+  setWorkspaceSlug,
 } from '../../store/slices/authSlice';
 import { getUserRoleFromAuthResponse } from '../../utils/authRole';
 import { ensureCsrfToken } from '../../utils/csrf';
+import { getStoredWorkspaceSlug } from '../../utils/workspaceSlug';
 import { removeAccessToken } from '../../utils/token';
 let authInitPromise: Promise<void> | null = null;
 async function runAuthInitialization(
@@ -27,6 +30,13 @@ async function runAuthInitialization(
       const role = getUserRoleFromAuthResponse(refreshResponse);
       if (role) {
         dispatch(setUserRole(role));
+      }
+      if (refreshResponse.appType) {
+        dispatch(setAppType(refreshResponse.appType));
+      }
+      const storedSlug = getStoredWorkspaceSlug();
+      if (storedSlug) {
+        dispatch(setWorkspaceSlug(storedSlug));
       }
       if (refreshResponse.user) {
         dispatch(

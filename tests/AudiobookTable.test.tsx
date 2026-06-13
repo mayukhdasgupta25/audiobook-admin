@@ -27,6 +27,24 @@ describe('AudiobookTable subscription column', () => {
     expect(screen.getByRole('columnheader', { name: 'Subscription' })).toBeInTheDocument();
   });
 
+  it('shows chapter count from API response', () => {
+    render(
+      <AudiobookTable
+        audiobooks={[
+          { ...baseAudiobook, chapterCount: 3 },
+          { ...baseAudiobook, id: 'ab-2', title: 'Audiobook Two', chapterCount: 0 },
+        ]}
+        filter="all"
+        onRowClick={() => undefined}
+        onEdit={() => undefined}
+        onDelete={() => undefined}
+      />
+    );
+
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('0')).toBeInTheDocument();
+  });
+
   it('shows tier labels for paid audiobooks', () => {
     render(
       <AudiobookTable

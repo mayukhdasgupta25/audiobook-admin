@@ -240,6 +240,56 @@ export function subscribeChapterTranscodingEvents(
   return () => controller.abort();
 }
 
+export function areAllTargetBitratesComplete(
+  status: ChapterTranscodingStatus | undefined
+): boolean {
+  if (!status) {
+    return false;
+  }
+
+  return TARGET_BITRATES.every(bitrate => {
+    const row = getBitrateRow(status, bitrate);
+    return row.status === 'completed' && row.progress >= 100;
+  });
+}
+
+export function normalizeChapterTranscodingStatus(
+  status: ChapterTranscodingStatus
+): ChapterTranscodingStatus {
+  const targetRows = TARGET_BITRATES.map(bitrate => getBitrateRow(status, bitrate));
+  const inProgress = targetRows.filter(
+    row => row.status === 'pending' || row.status === 'processing'
+  );
+  const failed = targetRows.filter(row => row.status === 'failed');
+  const completed = targetRows.filter(
+    row => row.status === 'completed' && row.progress >= 100
+  );
+
+  let aggregateStatus: ChapterTranscodingStatus['aggregateStatus'];
+  if (inProgress.length > 0) {
+    aggregateStatus = 'processing';
+  } else if (completed.length === TARGET_BITRATES.length) {
+    aggregateStatus = 'completed';
+  } else if (failed.length > 0 && completed.length > 0) {
+    aggregateStatus = 'partial';
+  } else if (failed.length > 0) {
+    aggregateStatus = 'failed';
+  } else if (completed.length > 0) {
+    aggregateStatus = 'partial';
+  } else {
+    aggregateStatus = status.aggregateStatus ?? 'not_started';
+  }
+
+  const allComplete = completed.length === TARGET_BITRATES.length;
+
+  return {
+    ...status,
+    aggregateStatus,
+    canStream: allComplete,
+    masterPlaylistReady: allComplete || status.masterPlaylistReady,
+  };
+}
+
 export function computeStreamBadge(
   status?: ChapterTranscodingStatus
 ): { label: string; className: string } {
@@ -247,12 +297,15 @@ export function computeStreamBadge(
     return { label: 'Unknown', className: 'chapter-stream-badge-unknown' };
   }
 
-  const inProgress = status.bitrates.filter(
-    b => b.status === 'pending' || b.status === 'processing'
-  );
+  const normalized = normalizeChapterTranscodingStatus(status);
+
+  const inProgress = TARGET_BITRATES.map(bitrate =>
+    getBitrateRow(normalized, bitrate)
+  ).filter(row => row.status === 'pending' || row.status === 'processing');
+
   if (inProgress.length > 0) {
     const avg = Math.round(
-      inProgress.reduce((sum, b) => sum + b.progress, 0) / inProgress.length
+      inProgress.reduce((sum, row) => sum + row.progress, 0) / inProgress.length
     );
     return {
       label: `Processing (${avg}%)`,
@@ -260,13 +313,13 @@ export function computeStreamBadge(
     };
   }
 
-  if (status.aggregateStatus === 'completed' && status.canStream) {
+  if (areAllTargetBitratesComplete(normalized)) {
     return { label: 'Ready', className: 'chapter-stream-badge-ready' };
   }
-  if (status.aggregateStatus === 'partial') {
+  if (normalized.aggregateStatus === 'partial') {
     return { label: 'Partial', className: 'chapter-stream-badge-partial' };
   }
-  if (status.aggregateStatus === 'failed') {
+  if (normalized.aggregateStatus === 'failed') {
     return { label: 'Failed', className: 'chapter-stream-badge-failed' };
   }
 

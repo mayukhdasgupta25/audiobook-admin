@@ -25,7 +25,6 @@ function formatDuration(seconds?: number): string {
 }
 
 const placeholderListeners = ['12.4K', '8.1K', '5.6K', '3.2K', '9.8K'];
-const placeholderChapters = [14, 22, 8, 18, 11];
 const placeholderDates = [
   'May 8, 2026',
   'Apr 12, 2026',
@@ -96,7 +95,7 @@ function AudiobookTableRow({
           {getAudiobookSubscriptionTierLabel(audiobook.minSubscriptionTier)}
         </p>
       </td>
-      <td>{placeholderChapters[index % placeholderChapters.length]}</td>
+      <td>{audiobook.chapterCount ?? '—'}</td>
       <td>{placeholderDates[index % placeholderDates.length]}</td>
       <td>{formatDuration(audiobook.duration)}</td>
       <td>{placeholderListeners[index % placeholderListeners.length]}</td>

@@ -10,6 +10,7 @@ import {
 } from '../store/slices/transcodingSlice';
 import {
   chapterNeedsTranscodingPoll,
+  normalizeChapterTranscodingStatus,
   pollChapterTranscodingUpdates,
 } from '../utils/streamingApi';
 import type { ChapterTranscodingStatus } from '../types/streaming';
@@ -21,7 +22,7 @@ function applySnapshotFallback(
   chapterId: string,
   bitrates: ChapterTranscodingStatus['bitrates']
 ): ChapterTranscodingStatus {
-  return {
+  return normalizeChapterTranscodingStatus({
     ...(current ?? {
       chapterId,
       canStream: false,
@@ -29,7 +30,7 @@ function applySnapshotFallback(
       aggregateStatus: 'processing',
     }),
     bitrates,
-  };
+  });
 }
 
 function buildMergedStatuses(

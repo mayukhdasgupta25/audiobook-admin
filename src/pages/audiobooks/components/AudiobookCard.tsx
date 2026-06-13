@@ -96,9 +96,17 @@ const AudiobookCard: React.FC<AudiobookCardProps> = ({
             </>
           )}
         </div>
-        {audiobook.duration && (
-          <div className="audiobook-card-duration">
-            <span>⏱️ {formatDuration(audiobook.duration)}</span>
+        {(audiobook.chapterCount != null || audiobook.duration) && (
+          <div className="audiobook-card-meta">
+            {audiobook.chapterCount != null && (
+              <span>
+                {audiobook.chapterCount}{' '}
+                {audiobook.chapterCount === 1 ? 'chapter' : 'chapters'}
+              </span>
+            )}
+            {audiobook.duration && (
+              <span>⏱️ {formatDuration(audiobook.duration)}</span>
+            )}
           </div>
         )}
       </div>

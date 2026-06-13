@@ -4,6 +4,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { ChapterTranscodingStatus } from '../../types/streaming';
+import { normalizeChapterTranscodingStatus } from '../../utils/streamingApi';
 
 interface TranscodingState {
   statusByChapterId: Record<string, ChapterTranscodingStatus>;
@@ -26,7 +27,8 @@ const transcodingSlice = createSlice({
       action: PayloadAction<ChapterTranscodingStatus[]>
     ) => {
       for (const status of action.payload) {
-        state.statusByChapterId[status.chapterId] = status;
+        state.statusByChapterId[status.chapterId] =
+          normalizeChapterTranscodingStatus(status);
       }
     },
     setTranscodingConnected: (state, action: PayloadAction<boolean>) => {

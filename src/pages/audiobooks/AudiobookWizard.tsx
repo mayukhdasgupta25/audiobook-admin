@@ -183,9 +183,6 @@ function AudiobookWizard() {
   const validateCurrentStep = (): boolean => {
     const stepErrors = validateAudiobookStep(step, data, mode);
     setErrors(stepErrors);
-    if (step === 1 && organizationError && mode === 'create' && !partnerApp) {
-      return false;
-    }
     return Object.keys(stepErrors).length === 0;
   };
 

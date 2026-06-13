@@ -48,6 +48,7 @@ export interface AudiobookApiResponse {
   genre?: AudiobookGenre;
   genres?: AudiobookGenre[];
   meta?: Record<string, string>;
+  minSubscriptionTier?: number | null;
 }
 
 /**

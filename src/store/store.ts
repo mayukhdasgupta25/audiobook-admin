@@ -9,11 +9,13 @@ import genresReducer from './slices/genresSlice';
 import tagsReducer from './slices/tagsSlice';
 import authorsReducer from './slices/authorsSlice';
 import partnerRegistrationReducer from './slices/partnerRegistrationSlice';
+import transcodingReducer from './slices/transcodingSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     audiobooks: audiobooksReducer,
     chapters: chaptersReducer,
+    transcoding: transcodingReducer,
     genres: genresReducer,
     tags: tagsReducer,
     authors: authorsReducer,

@@ -561,28 +561,27 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
   // Initialize editing keys when meta changes (but not on every render)
   useEffect(() => {
     const currentKeys = Object.keys(formData.meta);
-    const editingKeys = { ...editingMetaKeys };
-    let needsUpdate = false;
 
-    // Add missing keys to editing state
-    currentKeys.forEach(key => {
-      if (!(key in editingKeys)) {
-        editingKeys[key] = key;
-        needsUpdate = true;
-      }
+    setEditingMetaKeys(prev => {
+      const editingKeys = { ...prev };
+      let needsUpdate = false;
+
+      currentKeys.forEach(key => {
+        if (!(key in editingKeys)) {
+          editingKeys[key] = key;
+          needsUpdate = true;
+        }
+      });
+
+      Object.keys(editingKeys).forEach(key => {
+        if (!currentKeys.includes(key)) {
+          delete editingKeys[key];
+          needsUpdate = true;
+        }
+      });
+
+      return needsUpdate ? editingKeys : prev;
     });
-
-    // Remove keys that no longer exist in meta
-    Object.keys(editingKeys).forEach(key => {
-      if (!currentKeys.includes(key)) {
-        delete editingKeys[key];
-        needsUpdate = true;
-      }
-    });
-
-    if (needsUpdate) {
-      setEditingMetaKeys(editingKeys);
-    }
   }, [formData.meta]);
 
   // Convert meta object to array of [key, value] pairs for easier UI management

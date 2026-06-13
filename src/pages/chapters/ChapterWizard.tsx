@@ -284,7 +284,13 @@ function ChapterWizard() {
         />
       )}
       {step === 4 && (
-        <ChapterReviewPublishStep data={data} />
+        <ChapterReviewPublishStep
+          data={data}
+          onNavigateToStep={targetStep => {
+            setErrors({});
+            setStep(targetStep);
+          }}
+        />
       )}
     </WizardShell>
   );

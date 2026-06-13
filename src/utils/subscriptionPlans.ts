@@ -9,6 +9,12 @@ export const SUBSCRIPTION_TIER_BY_NAME = {
 export type SubscriptionTier =
   (typeof SUBSCRIPTION_TIER_BY_NAME)[keyof typeof SUBSCRIPTION_TIER_BY_NAME];
 
+export const SUBSCRIPTION_TIER_LABELS: Record<SubscriptionTier, string> = {
+  1: 'Base',
+  2: 'Standard',
+  3: 'Premium',
+};
+
 export interface SubscriptionPlanSelectOption {
   value: string;
   label: string;
@@ -80,4 +86,18 @@ export function getSubscriptionPlanNameForTier(
     ([, value]) => value === tier
   );
   return entry?.[0];
+}
+
+export function getAudiobookSubscriptionTierLabel(
+  minSubscriptionTier: number | null | undefined
+): string {
+  if (minSubscriptionTier == null) {
+    return 'Free';
+  }
+
+  if (isSubscriptionTier(minSubscriptionTier)) {
+    return SUBSCRIPTION_TIER_LABELS[minSubscriptionTier];
+  }
+
+  return `Tier ${minSubscriptionTier}`;
 }

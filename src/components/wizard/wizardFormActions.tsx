@@ -1,35 +1,7 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { createContext, useContext } from 'react';
 import Button from '../common/Button';
 import WizardScheduleButton from './WizardScheduleButton';
-
-export type WizardMode = 'create' | 'edit';
-
-export interface WizardFormActionsValue {
-  mode: WizardMode;
-  isLoading: boolean;
-  showBack: boolean;
-  showContinue: boolean;
-  showPublishActions: boolean;
-  scheduledAt?: string;
-  scheduleError?: string;
-  onBack?: () => void;
-  onContinue?: () => void;
-  onPublish?: () => void;
-  onSchedule?: () => void;
-  onScheduledAtChange?: (scheduledAt: string | undefined) => void;
-}
-
-export const WizardFormActionsContext =
-  createContext<WizardFormActionsValue | null>(null);
-
-export function useWizardFormActions(): WizardFormActionsValue {
-  const context = useContext(WizardFormActionsContext);
-  if (!context) {
-    throw new Error('useWizardFormActions must be used within WizardShell');
-  }
-  return context;
-}
+import { useWizardFormActions } from './wizardFormActionsContext';
 
 export function WizardContinueButton({ className = '' }: { className?: string }) {
   const { showContinue, onContinue, isLoading } = useWizardFormActions();

@@ -9,7 +9,7 @@ import {
 import DatePicker from 'react-datepicker';
 import { ChevronDown, X } from 'lucide-react';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useWizardFormActions } from './wizardFormActions';
+import { useWizardFormActions } from './wizardFormActionsContext';
 
 function formatScheduledAt(date: Date): string {
   const year = date.getFullYear();
@@ -71,13 +71,12 @@ function WizardScheduleButton() {
   const [pendingDate, setPendingDate] = useState<Date | null>(null);
 
   const hasSchedule = Boolean(scheduledAt);
-  const selectedDate = scheduledAt ? new Date(scheduledAt) : null;
 
   useEffect(() => {
     if (isPickerOpen) {
-      setPendingDate(selectedDate ?? new Date());
+      setPendingDate(scheduledAt ? new Date(scheduledAt) : new Date());
     }
-  }, [isPickerOpen, selectedDate]);
+  }, [isPickerOpen, scheduledAt]);
 
   if (!onSchedule || !onScheduledAtChange) {
     return null;

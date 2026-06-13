@@ -242,6 +242,22 @@
   color: var(--color-text-primary);
 }
 
+.login-form-label-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.login-form-label-row label {
+  margin-bottom: 0;
+}
+
+.login-form .info-hint-tooltip {
+  bottom: auto;
+  top: calc(100% + 8px);
+  max-width: 280px;
+}
+
 .input-with-icon {
   display: flex;
   align-items: center;

@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Grid3x3, List, Plus, Upload } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import {
@@ -14,8 +14,8 @@ import {
   deleteAudiobookThunk,
   type AudiobookFilter,
 } from '../../store/slices/audiobooksSlice';
+import { fetchGenres } from '../../store/slices/genresSlice';
 import type { AudiobookApiResponse } from '../../types/audiobook';
-import AudiobookCard from './components/AudiobookCard';
 import AudiobookTable from './components/AudiobookTable';
 import SummaryCards from './components/SummaryCards';
 import UpcomingReleasesWidget from './components/widgets/UpcomingReleasesWidget';
@@ -41,18 +41,24 @@ const Audiobooks: React.FC = () => {
   const dispatch = useAppDispatch();
   const { audiobooks, pagination, loading, filter, searchQuery, currentPage } =
     useAppSelector(state => state.audiobooks);
+  const { genres } = useAppSelector(state => state.genres);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingAudiobook, setDeletingAudiobook] =
     useState<AudiobookApiResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [localSearch, setLocalSearch] = useState('');
   const [genreFilter, setGenreFilter] = useState('all');
 
   useEffect(() => {
     dispatch(fetchAudiobooks({ page: currentPage, filter }));
   }, [dispatch, currentPage, filter]);
+
+  useEffect(() => {
+    if (genres.length === 0) {
+      dispatch(fetchGenres());
+    }
+  }, [dispatch, genres.length]);
 
   const filteredAudiobooks = useMemo(() => {
     let result = audiobooks;
@@ -80,14 +86,10 @@ const Audiobooks: React.FC = () => {
     return result;
   }, [audiobooks, searchQuery, localSearch, genreFilter]);
 
-  const genreOptions = useMemo(() => {
-    const names = new Set<string>();
-    audiobooks.forEach(ab => {
-      ab.genres?.forEach(g => names.add(g.name));
-      if (ab.genre?.name) names.add(ab.genre.name);
-    });
-    return Array.from(names).sort();
-  }, [audiobooks]);
+  const genreOptions = useMemo(
+    () => [...genres].sort((a, b) => a.name.localeCompare(b.name)),
+    [genres]
+  );
 
   const handlePageChange = (page: number) => {
     dispatch(setCurrentPage(page));
@@ -192,9 +194,9 @@ const Audiobooks: React.FC = () => {
               onChange={e => setGenreFilter(e.target.value)}
             >
               <option value="all">Genre</option>
-              {genreOptions.map(g => (
-                <option key={g} value={g}>
-                  {g}
+              {genreOptions.map(genre => (
+                <option key={genre.id} value={genre.name}>
+                  {genre.name}
                 </option>
               ))}
             </select>
@@ -204,24 +206,6 @@ const Audiobooks: React.FC = () => {
             <select className="audiobooks-filter-select" defaultValue="recent">
               <option value="recent">Sort by</option>
             </select>
-            <div className="audiobooks-view-toggle">
-              <button
-                type="button"
-                className={viewMode === 'list' ? 'active' : ''}
-                onClick={() => setViewMode('list')}
-                aria-label="List view"
-              >
-                <List size={18} />
-              </button>
-              <button
-                type="button"
-                className={viewMode === 'grid' ? 'active' : ''}
-                onClick={() => setViewMode('grid')}
-                aria-label="Grid view"
-              >
-                <Grid3x3 size={18} />
-              </button>
-            </div>
           </div>
 
           {loading && (
@@ -242,31 +226,13 @@ const Audiobooks: React.FC = () => {
 
           {!loading && filteredAudiobooks.length > 0 && (
             <>
-              {viewMode === 'list' ? (
-                <AudiobookTable
-                  audiobooks={filteredAudiobooks}
-                  filter={filter}
-                  onRowClick={ab =>
-                    navigate(`/audiobooks/${ab.id}/chapters`)
-                  }
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ) : (
-                <div className="audiobooks-grid">
-                  {filteredAudiobooks.map(audiobook => (
-                    <AudiobookCard
-                      key={audiobook.id}
-                      audiobook={audiobook}
-                      onClick={() =>
-                        navigate(`/audiobooks/${audiobook.id}/chapters`)
-                      }
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </div>
-              )}
+              <AudiobookTable
+                audiobooks={filteredAudiobooks}
+                filter={filter}
+                onRowClick={ab => navigate(`/audiobooks/${ab.id}/chapters`)}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
 
               <div className="audiobooks-pagination-bar">
                 {pagination && (

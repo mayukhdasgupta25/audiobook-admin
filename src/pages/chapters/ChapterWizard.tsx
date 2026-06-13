@@ -188,16 +188,23 @@ function ChapterWizard() {
     }
 
     try {
+      const hadNewAudio = Boolean(submissionData.file);
       if (mode === 'edit' && chapterId) {
         await dispatch(
           updateChapterThunk(buildUpdateChapterRequest(chapterId, submissionData))
         ).unwrap();
+        if (hadNewAudio) {
+          toast.success('Audio updated. Stream variants are re-processing…');
+        }
       } else {
         await dispatch(
           createChapterThunk(
             buildCreateChapterRequest(audiobookId, submissionData)
           )
         ).unwrap();
+        if (hadNewAudio) {
+          toast.success('Chapter published. Stream variants are processing…');
+        }
       }
 
       await dispatch(

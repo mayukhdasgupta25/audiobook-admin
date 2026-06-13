@@ -226,6 +226,8 @@ export interface ChapterApiResponse {
   fileUrl?: string;
   coverImage?: string;
   isActive?: boolean;
+  sourceUploadStatus?: 'pending' | 'ready' | 'failed';
+  sourceUploadError?: string | null;
   scheduledAt?: string;
   createdAt?: string;
   updatedAt?: string;

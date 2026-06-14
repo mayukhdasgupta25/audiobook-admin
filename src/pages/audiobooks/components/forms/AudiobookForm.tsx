@@ -203,6 +203,9 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
         scheduledAt: undefined,
         meta: initialData.meta || {},
         language: initialData.language || DEFAULT_AUDIOBOOK_LANGUAGE,
+        isPaid: false,
+        minSubscriptionTier: initialData.minSubscriptionTier ?? null,
+        moodId: null,
       });
     }
   }, [initialData, genres, tags]);
@@ -331,6 +334,9 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           scheduledAt: undefined,
           meta: {},
           language: DEFAULT_AUDIOBOOK_LANGUAGE,
+          isPaid: false,
+          minSubscriptionTier: null,
+          moodId: null,
         });
       }
 
@@ -471,6 +477,9 @@ const AudiobookForm: React.FC<AudiobookFormProps> = ({
           scheduledAt: undefined,
           meta: {},
           language: DEFAULT_AUDIOBOOK_LANGUAGE,
+          isPaid: false,
+          minSubscriptionTier: null,
+          moodId: null,
         });
       }
 

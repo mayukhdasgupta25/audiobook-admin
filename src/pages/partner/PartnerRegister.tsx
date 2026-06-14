@@ -42,6 +42,8 @@ import {
 
   setRegisteredEmail,
 
+  setUserProfileId,
+
   setIsOtpVerified,
 
   setStep,

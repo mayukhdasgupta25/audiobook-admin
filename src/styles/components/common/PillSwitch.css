@@ -1,0 +1,78 @@
+.pill-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 88px;
+  height: 36px;
+  padding: 0 14px 0 36px;
+  border: 2px solid var(--color-text-tertiary);
+  border-radius: 999px;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    padding var(--transition-fast);
+}
+
+.pill-switch:hover:not(:disabled):not(.pill-switch--checked) {
+  border-color: var(--color-text-secondary);
+  background: var(--color-border);
+}
+
+.pill-switch:hover:not(:disabled).pill-switch--checked {
+  border-color: var(--color-primary);
+}
+
+.pill-switch:focus-visible {
+  outline: 2px solid var(--color-primary-muted);
+  outline-offset: 2px;
+}
+
+.pill-switch--checked {
+  justify-content: flex-start;
+  padding: 0 36px 0 14px;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.pill-switch:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pill-switch-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-border-hover);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+  transition:
+    left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.pill-switch--checked .pill-switch-thumb {
+  left: calc(100% - 28px);
+  background: var(--color-primary);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+}
+
+.pill-switch-text {
+  position: relative;
+  z-index: 1;
+  user-select: none;
+  white-space: nowrap;
+}

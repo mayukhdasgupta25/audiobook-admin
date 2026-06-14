@@ -1,0 +1,82 @@
+.landing-hue-gradient {
+  background: var(--landing-hue-gradient);
+}
+
+.text-gradient {
+  background: var(--color-primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.marketing-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.marketing-logo img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.marketing-logo-text {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1;
+}
+
+.marketing-logo-brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.marketing-logo-suffix {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  letter-spacing: 0.01em;
+}
+
+.marketing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--color-primary-muted);
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid rgba(79, 70, 229, 0.18);
+}
+
+.marketing-card {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.marketing-stat-trend {
+  color: var(--color-success);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.form-highlight-surface {
+  background: var(--color-primary-light);
+  border: 1px solid rgba(79, 70, 229, 0.14);
+  color: var(--color-primary);
+}
+
+.form-highlight-surface svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}

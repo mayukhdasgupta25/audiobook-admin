@@ -4,28 +4,22 @@
   min-height: 100vh;
   background-color: #f9fafb;
 }
+
 .layout-content {
   display: flex;
   flex: 1;
   overflow: hidden;
-  margin-top: 30px;
 }
+
 .layout-main {
   flex: 1;
   overflow-y: auto;
-  padding: 0 24px 24px 24px;
+  padding: 24px;
   background-color: #f9fafb;
   margin-left: 240px;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 64px);
 }
-.layout-main > * {
-  margin-top: 0;
-  padding-top: 0;
-}
-.layout-main > * > *:first-child {
-  margin-top: 0;
-  padding-top: 0;
-}
+
 @media (max-width: 768px) {
   .layout-main {
     padding: 16px;

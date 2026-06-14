@@ -50,14 +50,11 @@
   pointer-events: none;
   color: #6b7280;
   font-size: 12px;
-  transition:
-    transform 0.2s ease,
-    color 0.2s ease;
+  transition: color 0.2s ease;
   user-select: none;
 }
 .select-wrapper:has(.select-input:focus) .select-arrow {
   color: #2563eb;
-  transform: rotate(180deg);
 }
 .select-wrapper.select-error .select-input {
   border-color: #dc2626;

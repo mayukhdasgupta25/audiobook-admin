@@ -130,14 +130,19 @@
   background-color: #3b82f6;
 }
 
-.audiobook-card-duration {
+.audiobook-card-badge-mood {
+  background-color: #8b5cf6;
+}
+
+.audiobook-card-meta {
   margin-top: auto;
   padding-top: 8px;
   font-size: 13px;
   color: #6b7280;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 8px 12px;
 }
 
 .audiobook-card-actions {

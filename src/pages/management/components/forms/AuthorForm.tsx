@@ -9,13 +9,19 @@ import '../../../../styles/pages/management/components/forms/AuthorForm.css';
 interface AuthorFormData {
   firstName: string;
   lastName: string;
-  email: string;
+  userId: string;
   address: string;
   contact: string;
 }
 
 interface AuthorFormProps {
-  initialData?: AuthorFormData;
+  initialData?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    userId?: string;
+    address?: string | null;
+    contact?: string | null;
+  };
   onSubmit: (data: AuthorFormData) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
@@ -27,13 +33,14 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<AuthorFormData>({
+  const [formData, setFormData] = useState({
     firstName: initialData?.firstName || '',
     lastName: initialData?.lastName || '',
-    email: initialData?.email || '',
+    userId: initialData?.userId || '',
     address: initialData?.address || '',
     contact: initialData?.contact || '',
   });
+  const isEditing = Boolean(initialData);
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof AuthorFormData, string>>
@@ -44,7 +51,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
       setFormData({
         firstName: initialData.firstName || '',
         lastName: initialData.lastName || '',
-        email: initialData.email || '',
+        userId: initialData.userId || '',
         address: initialData.address || '',
         contact: initialData.contact || '',
       });
@@ -52,55 +59,27 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
     setErrors({});
   }, [initialData]);
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
 
     const newErrors: Partial<Record<keyof AuthorFormData, string>> = {};
 
-    // Validate firstName
     const trimmedFirstName = formData.firstName.trim();
     if (!trimmedFirstName) {
       newErrors.firstName = 'First name is required';
-    } else if (trimmedFirstName.length < 2) {
-      newErrors.firstName = 'First name must be at least 2 characters';
-    } else if (trimmedFirstName.length > 50) {
-      newErrors.firstName = 'First name must be less than 50 characters';
     }
 
-    // Validate lastName
     const trimmedLastName = formData.lastName.trim();
     if (!trimmedLastName) {
       newErrors.lastName = 'Last name is required';
-    } else if (trimmedLastName.length < 2) {
-      newErrors.lastName = 'Last name must be at least 2 characters';
-    } else if (trimmedLastName.length > 50) {
-      newErrors.lastName = 'Last name must be less than 50 characters';
     }
 
-    // Validate email
-    const trimmedEmail = formData.email.trim();
-    if (!trimmedEmail) {
-      newErrors.email = 'Email is required';
-    } else if (!validateEmail(trimmedEmail)) {
-      newErrors.email = 'Please enter a valid email address';
-    } else if (trimmedEmail.length > 100) {
-      newErrors.email = 'Email must be less than 100 characters';
-    }
-
-    // Validate address (optional)
-    if (formData.address && formData.address.trim().length > 200) {
-      newErrors.address = 'Address must be less than 200 characters';
-    }
-
-    // Validate contact (optional)
-    if (formData.contact && formData.contact.trim().length > 20) {
-      newErrors.contact = 'Contact must be less than 20 characters';
+    if (!isEditing) {
+      const trimmedUserId = formData.userId.trim();
+      if (!trimmedUserId) {
+        newErrors.userId = 'User ID is required for author creation';
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -108,129 +87,115 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
       return;
     }
 
-    try {
-      await onSubmit({
-        firstName: trimmedFirstName,
-        lastName: trimmedLastName,
-        email: trimmedEmail,
-        address: formData.address.trim() || '',
-        contact: formData.contact.trim() || '',
-      });
-    } catch (err) {
-      // Error handling is done in parent component
-    }
-  };
-
-  const handleChange = (field: keyof AuthorFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
+    await onSubmit({
+      firstName: trimmedFirstName,
+      lastName: trimmedLastName,
+      userId: formData.userId.trim(),
+      address: formData.address.trim(),
+      contact: formData.contact.trim(),
+    });
   };
 
   return (
-    <form className="author-form" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="author-form">
       <div className="form-group">
-        <label htmlFor="author-first-name" className="form-label">
-          First Name <span className="required">*</span>
-        </label>
+        <label htmlFor="firstName">First Name</label>
         <input
-          id="author-first-name"
+          id="firstName"
           type="text"
-          className={`form-input ${errors.firstName ? 'form-input-error' : ''}`}
           value={formData.firstName}
-          onChange={e => handleChange('firstName', e.target.value)}
+          onChange={e => {
+            setFormData({ ...formData, firstName: e.target.value });
+            setErrors({ ...errors, firstName: '' });
+          }}
           placeholder="Enter first name"
+          className={errors.firstName ? 'input-error' : ''}
           disabled={isLoading}
-          autoFocus
         />
         {errors.firstName && (
-          <span className="form-error">{errors.firstName}</span>
+          <span className="error-message">{errors.firstName}</span>
         )}
       </div>
 
       <div className="form-group">
-        <label htmlFor="author-last-name" className="form-label">
-          Last Name <span className="required">*</span>
-        </label>
+        <label htmlFor="lastName">Last Name</label>
         <input
-          id="author-last-name"
+          id="lastName"
           type="text"
-          className={`form-input ${errors.lastName ? 'form-input-error' : ''}`}
           value={formData.lastName}
-          onChange={e => handleChange('lastName', e.target.value)}
+          onChange={e => {
+            setFormData({ ...formData, lastName: e.target.value });
+            setErrors({ ...errors, lastName: '' });
+          }}
           placeholder="Enter last name"
+          className={errors.lastName ? 'input-error' : ''}
           disabled={isLoading}
         />
         {errors.lastName && (
-          <span className="form-error">{errors.lastName}</span>
+          <span className="error-message">{errors.lastName}</span>
         )}
       </div>
 
-      <div className="form-group">
-        <label htmlFor="author-email" className="form-label">
-          Email <span className="required">*</span>
-        </label>
-        <input
-          id="author-email"
-          type="email"
-          className={`form-input ${errors.email ? 'form-input-error' : ''}`}
-          value={formData.email}
-          onChange={e => handleChange('email', e.target.value)}
-          placeholder="Enter email address"
-          disabled={isLoading}
-        />
-        {errors.email && <span className="form-error">{errors.email}</span>}
-      </div>
+      {!isEditing && (
+        <div className="form-group">
+          <label htmlFor="userId">User ID</label>
+          <input
+            id="userId"
+            type="text"
+            value={formData.userId}
+            onChange={e => {
+              setFormData({ ...formData, userId: e.target.value });
+              setErrors({ ...errors, userId: '' });
+            }}
+            placeholder="Existing AUTHOR user ID"
+            className={errors.userId ? 'input-error' : ''}
+            disabled={isLoading}
+          />
+          {errors.userId && (
+            <span className="error-message">{errors.userId}</span>
+          )}
+          <p className="form-hint">
+            The user must already be registered with the AUTHOR role.
+          </p>
+        </div>
+      )}
 
       <div className="form-group">
-        <label htmlFor="author-address" className="form-label">
-          Address <span className="optional">(optional)</span>
-        </label>
-        <textarea
-          id="author-address"
-          className={`form-input form-textarea ${errors.address ? 'form-input-error' : ''}`}
+        <label htmlFor="address">Address</label>
+        <input
+          id="address"
+          type="text"
           value={formData.address}
-          onChange={e => handleChange('address', e.target.value)}
+          onChange={e => {
+            setFormData({ ...formData, address: e.target.value });
+            setErrors({ ...errors, address: '' });
+          }}
           placeholder="Enter address"
           disabled={isLoading}
-          rows={3}
         />
-        {errors.address && <span className="form-error">{errors.address}</span>}
       </div>
 
       <div className="form-group">
-        <label htmlFor="author-contact" className="form-label">
-          Contact <span className="optional">(optional)</span>
-        </label>
+        <label htmlFor="contact">Contact</label>
         <input
-          id="author-contact"
+          id="contact"
           type="text"
-          className={`form-input ${errors.contact ? 'form-input-error' : ''}`}
           value={formData.contact}
-          onChange={e => handleChange('contact', e.target.value)}
+          onChange={e => {
+            setFormData({ ...formData, contact: e.target.value });
+            setErrors({ ...errors, contact: '' });
+          }}
           placeholder="Enter contact number"
           disabled={isLoading}
         />
-        {errors.contact && <span className="form-error">{errors.contact}</span>}
       </div>
 
       <div className="form-actions">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
+        <Button type="button" variant="secondary" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" variant="primary" isLoading={isLoading}>
-          {initialData ? 'Update' : 'Create'}
+          {isEditing ? 'Update Author' : 'Create Author'}
         </Button>
       </div>
     </form>

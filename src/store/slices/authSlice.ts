@@ -3,22 +3,29 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { UserRole } from '../../types/auth';
+import type { LoginAppType, UserRole } from '../../types/auth';
+
+export interface AuthUser {
+  email?: string;
+  name?: string;
+  avatarUrl?: string;
+}
 
 interface AuthState {
   isAuthenticated: boolean;
   isInitialized: boolean;
   role: UserRole | null;
-  user: {
-    email?: string;
-    name?: string;
-  } | null;
+  appType: LoginAppType | null;
+  workspaceSlug: string | null;
+  user: AuthUser | null;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
   isInitialized: false,
   role: null,
+  appType: null,
+  workspaceSlug: null,
   user: null,
 };
 
@@ -31,6 +38,8 @@ const authSlice = createSlice({
       if (!action.payload) {
         state.user = null;
         state.role = null;
+        state.appType = null;
+        state.workspaceSlug = null;
       }
     },
     setAuthInitialized: (state, action: PayloadAction<boolean>) => {
@@ -39,7 +48,13 @@ const authSlice = createSlice({
     setUserRole: (state, action: PayloadAction<UserRole | null>) => {
       state.role = action.payload;
     },
-    setUser: (state, action: PayloadAction<AuthState['user']>) => {
+    setAppType: (state, action: PayloadAction<LoginAppType | null>) => {
+      state.appType = action.payload;
+    },
+    setWorkspaceSlug: (state, action: PayloadAction<string | null>) => {
+      state.workspaceSlug = action.payload;
+    },
+    setUser: (state, action: PayloadAction<AuthUser | null>) => {
       state.user = action.payload;
       if (action.payload) {
         state.isAuthenticated = true;
@@ -48,6 +63,8 @@ const authSlice = createSlice({
     logout: state => {
       state.isAuthenticated = false;
       state.role = null;
+      state.appType = null;
+      state.workspaceSlug = null;
       state.user = null;
     },
   },
@@ -57,6 +74,8 @@ export const {
   setAuthenticated,
   setAuthInitialized,
   setUserRole,
+  setAppType,
+  setWorkspaceSlug,
   setUser,
   logout,
 } = authSlice.actions;

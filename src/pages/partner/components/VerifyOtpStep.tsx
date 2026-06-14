@@ -1,137 +1,349 @@
-import { FormEvent, useState } from 'react';
-import InfoHint from '../../../components/common/InfoHint';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+
+import { ArrowRight, Mail } from 'lucide-react';
+
 import Button from '../../../components/common/Button';
+
+import FieldErrorHint from '../../../components/common/FieldErrorHint';
+
+import OtpInput from '../../../components/common/OtpInput';
+
+import RegistrationSummary from '../../../components/common/RegistrationSummary';
+
 import type { PartnerType } from '../../../types/partner';
 
+import toast from 'react-hot-toast';
+
+
+
 export interface VerifyOtpFormData {
-  firstName: string;
-  lastName: string;
+
   otp: string;
+
 }
+
+
 
 interface VerifyOtpStepProps {
+
   email: string;
+
   isLoading: boolean;
+
   variant?: PartnerType;
+
+  organizationName?: string;
+
+  logoPreviewUrl?: string | null;
+
+  fullName?: string;
+
+  photoPreviewUrl?: string | null;
+
   onVerify: (data: VerifyOtpFormData) => void;
+
   onBack?: () => void;
+
+  onEditEmail?: () => void;
+
 }
+
+
+
+const RESEND_SECONDS = 30;
+
+
 
 function VerifyOtpStep({
+
   email,
+
   isLoading,
+
   variant = 'organization',
+
+  organizationName,
+
+  logoPreviewUrl,
+
+  fullName,
+
+  photoPreviewUrl,
+
   onVerify,
+
   onBack,
+
+  onEditEmail,
+
 }: VerifyOtpStepProps) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+
   const [otp, setOtp] = useState('');
-  const [error, setError] = useState('');
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    if (!otp.trim()) {
-      setError('Please enter the verification OTP');
+  const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+
+
+
+  useEffect(() => {
+
+    if (secondsLeft <= 0) {
+
       return;
+
     }
 
-    onVerify({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      otp: otp.trim(),
-    });
+    const timer = window.setInterval(() => {
+
+      setSecondsLeft(current => current - 1);
+
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+
+  }, [secondsLeft]);
+
+
+
+  const formattedTimer = useMemo(() => {
+
+    const minutes = Math.floor(secondsLeft / 60)
+
+      .toString()
+
+      .padStart(2, '0');
+
+    const seconds = (secondsLeft % 60).toString().padStart(2, '0');
+
+    return `${minutes}:${seconds}`;
+
+  }, [secondsLeft]);
+
+
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+
+    e.preventDefault();
+
+
+
+    if (otp.length !== 6) {
+
+      setFieldErrors({
+
+        otp: 'Please enter the 6-digit verification code',
+
+      });
+
+      return;
+
+    }
+
+
+
+    setFieldErrors({});
+
+    onVerify({ otp });
+
   };
 
+
+
+  const handleResend = () => {
+
+    if (secondsLeft > 0) {
+
+      return;
+
+    }
+
+    setSecondsLeft(RESEND_SECONDS);
+
+    toast('Please check your inbox for the verification code.');
+
+  };
+
+
+
   return (
+
     <form onSubmit={handleSubmit} className="partner-register-form">
-      <p className="partner-form-section-title">Verify your account</p>
-      <p
-        className="partner-register-step"
-        style={{ marginTop: '-16px', marginBottom: '16px' }}
-      >
-        OTP sent to {email}
-      </p>
 
-      {variant === 'organization' && (
-        <>
-          <div className="partner-form-group">
-            <label htmlFor="firstName">
-              First name
-              <InfoHint message="If not provided, a default name will be added" />
-            </label>
-            <input
-              id="firstName"
-              type="text"
-              value={firstName}
-              onChange={e => {
-                setFirstName(e.target.value);
-                setError('');
-              }}
-              placeholder="First name (optional)"
-              disabled={isLoading}
-            />
-          </div>
+      <div className="partner-verify-hero">
 
-          <div className="partner-form-group">
-            <label htmlFor="lastName">
-              Last name
-              <InfoHint message="If not provided, a default name will be added" />
-            </label>
-            <input
-              id="lastName"
-              type="text"
-              value={lastName}
-              onChange={e => {
-                setLastName(e.target.value);
-                setError('');
-              }}
-              placeholder="Last name (optional)"
-              disabled={isLoading}
-            />
-          </div>
-        </>
-      )}
+        <div className="partner-verify-icon" aria-hidden="true">
+
+          <Mail size={28} />
+
+        </div>
+
+        <h2 className="partner-verify-title">Verify your email</h2>
+
+        <p className="partner-verify-subtitle">
+
+          We sent a 6-digit code to <strong>{email}</strong>
+
+        </p>
+
+      </div>
+
+
 
       <div className="partner-form-group">
-        <label htmlFor="otp">Verify OTP</label>
-        <input
-          id="otp"
-          type="text"
-          inputMode="numeric"
-          autoComplete="one-time-code"
+
+        <label className="partner-field-label">
+
+          Verification code
+
+          <FieldErrorHint message={fieldErrors.otp} />
+
+        </label>
+
+        <OtpInput
+
           value={otp}
-          onChange={e => {
-            setOtp(e.target.value);
-            setError('');
+
+          onChange={value => {
+
+            setOtp(value);
+
+            setFieldErrors({});
+
           }}
-          placeholder="Enter OTP"
+
           disabled={isLoading}
-          className={error && !otp.trim() ? 'input-error' : ''}
+
+          hasError={Boolean(fieldErrors.otp)}
+
         />
+
       </div>
 
-      {error && <span className="partner-error-message">{error}</span>}
 
-      <div className="partner-form-actions">
-        <Button type="submit" isLoading={isLoading} disabled={isLoading}>
-          Verify OTP
-        </Button>
-        {onBack && (
+
+      <div className="partner-verify-actions">
+
+        <p className="partner-verify-helper">Didn&apos;t get it?</p>
+
+        <button
+
+          type="button"
+
+          className="partner-resend-btn"
+
+          onClick={handleResend}
+
+          disabled={secondsLeft > 0 || isLoading}
+
+        >
+
+          {secondsLeft > 0
+
+            ? `Resend code in ${formattedTimer}`
+
+            : 'Resend code'}
+
+        </button>
+
+        {onEditEmail && (
+
           <button
+
             type="button"
-            className="partner-back-link"
-            onClick={onBack}
+
+            className="partner-edit-email-btn"
+
+            onClick={onEditEmail}
+
             disabled={isLoading}
+
           >
-            Back
+
+            Edit email
+
           </button>
+
         )}
+
       </div>
+
+
+
+      {variant === 'organization' && (
+
+        <RegistrationSummary
+
+          partnerType="organization"
+
+          email={email}
+
+          organizationName={organizationName}
+
+          logoPreviewUrl={logoPreviewUrl}
+
+        />
+
+      )}
+
+
+
+      {variant === 'individual' && (
+
+        <RegistrationSummary
+
+          partnerType="individual"
+
+          email={email}
+
+          fullName={fullName}
+
+          photoPreviewUrl={photoPreviewUrl}
+
+        />
+
+      )}
+
+
+
+      <div className="partner-wizard-footer">
+
+        {onBack && (
+
+          <button
+
+            type="button"
+
+            className="partner-back-link"
+
+            onClick={onBack}
+
+            disabled={isLoading}
+
+          >
+
+            Back
+
+          </button>
+
+        )}
+
+        <Button type="submit" className="partner-continue-btn" isLoading={isLoading}>
+
+          Verify &amp; Finish
+
+          <ArrowRight size={16} aria-hidden="true" />
+
+        </Button>
+
+      </div>
+
     </form>
+
   );
+
 }
+
+
 
 export default VerifyOtpStep;

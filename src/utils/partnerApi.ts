@@ -1,12 +1,16 @@
 import type { ApiError } from '../types/auth';
 import type {
+  AuthorProfileDto,
   CompletePartnerOrganizationInput,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
+  OrganizationItem,
   RegisterIndividualInput,
   RegisterPartnerUserInput,
   RegisterRequest,
   RegisterResponse,
+  UserProfile,
+  UserProfileResponse,
   VerifyRegistrationOtpRequest,
   VerifyRegistrationOtpResponse,
 } from '../types/partner';
@@ -14,9 +18,17 @@ import {
   getAuthApiBaseUrl,
   getContentApiBaseUrl,
   getAuthHeaders,
+  getAuthHeadersForFileUpload,
   handleApiError,
 } from './config';
+import { buildOrganizationFormData } from './organizationFormData';
+import {
+  buildRegisterFormData,
+  type RegisterFormDataInput,
+} from './registerFormData';
+import { setStoredWorkspaceSlug } from './workspaceSlug';
 import { setAccessToken } from './token';
+
 function getPublicJsonHeaders(): HeadersInit {
   return {
     'Content-Type': 'application/json',
@@ -32,20 +44,28 @@ function storeTokenFromResponse(
     setAccessToken(response.token);
   }
 }
+
 /**
- * Creates a new organization
+ * Creates a new organization on auth-service
  */
 export async function createOrganization(
   payload: CreateOrganizationRequest
-): Promise<CreateOrganizationResponse['data']> {
+): Promise<OrganizationItem> {
   try {
-    const headers = getAuthHeaders();
+    const formData = buildOrganizationFormData({
+      organizationName: payload.name,
+      websiteUrl: payload.websiteUrl,
+      teamSize: payload.teamSize,
+      preferredGenre: payload.preferredGenre,
+      image: payload.image,
+    });
+    const headers = getAuthHeadersForFileUpload();
     const response = await fetch(
-      `${getContentApiBaseUrl()}/api/v1/organizations`,
+      `${getAuthApiBaseUrl()}/auth/organizations`,
       {
         method: 'POST',
         headers,
-        body: JSON.stringify(payload),
+        body: formData,
       }
     );
     const data = await response.json();
@@ -59,23 +79,34 @@ export async function createOrganization(
     }
 
     const orgResponse = data as CreateOrganizationResponse;
-    return orgResponse.data;
+    if (orgResponse.organization?.slug) {
+      setStoredWorkspaceSlug(orgResponse.organization.slug);
+    }
+    return orgResponse.organization;
   } catch (error) {
     throw handleApiError(error);
   }
 }
+
 /**
  * Registers a new user
  */
 export async function registerUser(
-  payload: RegisterRequest
+  payload: RegisterFormDataInput
 ): Promise<RegisterResponse> {
   try {
+    const isAuthorRegistration = payload.role === 'AUTHOR';
+    const useMultipart = isAuthorRegistration || Boolean(payload.profileImage);
+    const { profileImage, ...jsonPayload } = payload;
+    void profileImage;
+
     const response = await fetch(`${getAuthApiBaseUrl()}/auth/register`, {
       method: 'POST',
       credentials: 'include',
-      headers: getPublicJsonHeaders(),
-      body: JSON.stringify(payload),
+      headers: useMultipart ? {} : getPublicJsonHeaders(),
+      body: useMultipart
+        ? buildRegisterFormData(payload)
+        : JSON.stringify(jsonPayload),
     });
     const data = await response.json();
     if (!response.ok) {
@@ -87,13 +118,12 @@ export async function registerUser(
       throw error;
     }
 
-    const registerResponse = data as RegisterResponse;
-    storeTokenFromResponse(registerResponse);
-    return registerResponse;
+    return data as RegisterResponse;
   } catch (error) {
     throw handleApiError(error);
   }
 }
+
 /**
  * Verifies registration OTP
  */
@@ -139,31 +169,122 @@ export async function verifyRegistrationOtp(
     throw handleApiError(error);
   }
 }
+
+/**
+ * Fetches the authenticated author's profile from auth-service
+ */
+export async function getMyAuthorProfile(): Promise<AuthorProfileDto> {
+  try {
+    const headers = getAuthHeaders();
+    const response = await fetch(`${getAuthApiBaseUrl()}/auth/authors/me`, {
+      method: 'GET',
+      headers,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      const error: ApiError = {
+        message: data.message || data.error || 'Failed to fetch author profile',
+        error: data.error,
+        statusCode: response.status,
+      };
+      throw error;
+    }
+
+    return (data as { author: AuthorProfileDto }).author;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+
+/**
+ * Persists author slug after registration before logout
+ */
+export async function storeAuthorSlugAfterRegistration(): Promise<void> {
+  try {
+    const author = await getMyAuthorProfile();
+    if (author.slug) {
+      setStoredWorkspaceSlug(author.slug);
+    }
+  } catch {
+    // slug can be entered manually at login if fetch fails
+  }
+}
+
+const PROFILE_RETRY_DELAY_MS = 500;
+
+/**
+ * Fetches the authenticated user's profile from app-service
+ */
+export async function getUserProfile(): Promise<UserProfile> {
+  try {
+    const headers = getAuthHeaders();
+    const response = await fetch(
+      `${getContentApiBaseUrl()}/api/v1/user/profile`,
+      {
+        method: 'GET',
+        headers,
+      }
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      const error: ApiError = {
+        message: data.message || data.error || 'Failed to fetch user profile',
+        error: data.error,
+        statusCode: response.status,
+      };
+      throw error;
+    }
+
+    const profileResponse = data as UserProfileResponse;
+    return profileResponse.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+
+/**
+ * Fetches user profile, retrying on 404 up to maxAttempts times
+ */
+export async function fetchUserProfileWithRetry(
+  maxAttempts = 3
+): Promise<UserProfile> {
+  let lastError: ApiError | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await getUserProfile();
+    } catch (error) {
+      const apiError = error as ApiError;
+      lastError = apiError;
+
+      if (apiError.statusCode !== 404 || attempt === maxAttempts) {
+        throw error;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, PROFILE_RETRY_DELAY_MS));
+    }
+  }
+
+  throw (
+    lastError ?? {
+      message: 'Failed to fetch user profile',
+      error: 'ProfileNotFound',
+      statusCode: 404,
+    }
+  );
+}
+
 /**
  * Registers an organization admin user with email, password, and role
  */
 export async function registerPartnerUser(
   input: RegisterPartnerUserInput
 ): Promise<string> {
-  await registerUser({
-    email: input.email.trim(),
-    password: input.password,
-    role: input.role,
-  });
-  return input.email.trim();
-}
-/**
- * Registers an individual author partner with personal details and type AUTHOR
- */
-export async function registerIndividualPartner(
-  input: RegisterIndividualInput
-): Promise<string> {
   const body: RegisterRequest = {
     email: input.email.trim(),
     password: input.password,
-    type: 'AUTHOR',
-    firstName: input.firstName.trim(),
-    lastName: input.lastName.trim(),
+    confirmPassword: input.confirmPassword,
+    role: input.role,
   };
   if (input.address?.trim()) {
     body.address = input.address.trim();
@@ -174,11 +295,43 @@ export async function registerIndividualPartner(
   await registerUser(body);
   return input.email.trim();
 }
+
 /**
- * Creates organization (members are created by the backend on org creation)
+ * Registers an individual author partner with personal details and role AUTHOR
+ */
+export async function registerIndividualPartner(
+  input: RegisterIndividualInput
+): Promise<string> {
+  const body: RegisterFormDataInput = {
+    email: input.email.trim(),
+    password: input.password,
+    confirmPassword: input.confirmPassword,
+    role: 'AUTHOR',
+    firstName: input.firstName.trim(),
+    lastName: input.lastName.trim(),
+    address: input.address.trim(),
+  };
+  if (input.contact?.trim()) {
+    body.contact = input.contact.trim();
+  }
+  if (input.profileImage) {
+    body.profileImage = input.profileImage;
+  }
+  await registerUser(body);
+  return input.email.trim();
+}
+
+/**
+ * Creates organization after OTP verification
  */
 export async function completePartnerOrganizationSetup(
   input: CompletePartnerOrganizationInput
-): Promise<void> {
-  await createOrganization({ name: input.organizationName.trim() });
+): Promise<OrganizationItem> {
+  return createOrganization({
+    name: input.organizationName.trim(),
+    websiteUrl: input.websiteUrl,
+    teamSize: input.teamSize,
+    preferredGenre: input.preferredGenre,
+    image: input.image,
+  });
 }

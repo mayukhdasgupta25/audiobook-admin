@@ -1,0 +1,57 @@
+.field-error-hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.field-error-hint-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-danger-light, #fee2e2);
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+}
+
+.field-error-hint-popover {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 20;
+  width: max-content;
+  max-width: 240px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-text-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  box-shadow: var(--shadow-md);
+}
+
+.partner-field-label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.partner-input--error {
+  border-color: var(--color-danger) !important;
+}
+
+.partner-form-group--error .pill-selector {
+  outline: 1px solid var(--color-danger);
+  outline-offset: 2px;
+  border-radius: 8px;
+}

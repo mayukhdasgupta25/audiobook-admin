@@ -1,81 +1,102 @@
 /**
- * Audiobooks page with Live/Scheduled tabs
+ * Audiobooks page — catalog management home screen
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus, Upload } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import {
   fetchAudiobooks,
   setFilter,
   setCurrentPage,
   deleteAudiobookThunk,
+  type AudiobookFilter,
 } from '../../store/slices/audiobooksSlice';
+import { fetchGenres } from '../../store/slices/genresSlice';
 import type { AudiobookApiResponse } from '../../types/audiobook';
-import AudiobookCard from './components/AudiobookCard';
+import AudiobookTable from './components/AudiobookTable';
+import SummaryCards from './components/SummaryCards';
+import UpcomingReleasesWidget from './components/widgets/UpcomingReleasesWidget';
+import PerformanceSnapshotWidget from './components/widgets/PerformanceSnapshotWidget';
+import QuickActionsWidget from './components/widgets/QuickActionsWidget';
+import RecentActivityWidget from './components/widgets/RecentActivityWidget';
 import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Pagination from '../../components/common/Pagination';
-import AudiobookForm from './components/forms/AudiobookForm';
 import { showApiError } from '../../utils/toast';
 import '../../styles/pages/audiobooks/Audiobooks.css';
+
+const TABS: { id: AudiobookFilter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'live', label: 'Live' },
+  { id: 'scheduled', label: 'Scheduled' },
+  { id: 'drafts', label: 'Drafts' },
+  { id: 'archived', label: 'Archived' },
+];
 
 const Audiobooks: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { audiobooks, pagination, loading, filter, searchQuery, currentPage } =
     useAppSelector(state => state.audiobooks);
+  const { genres } = useAppSelector(state => state.genres);
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingAudiobook, setEditingAudiobook] =
-    useState<AudiobookApiResponse | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingAudiobook, setDeletingAudiobook] =
     useState<AudiobookApiResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [localSearch, setLocalSearch] = useState('');
+  const [genreFilter, setGenreFilter] = useState('all');
 
-  // Fetch audiobooks when page or filter changes
   useEffect(() => {
     dispatch(fetchAudiobooks({ page: currentPage, filter }));
   }, [dispatch, currentPage, filter]);
 
-  // Filter audiobooks by search query (client-side)
+  useEffect(() => {
+    if (genres.length === 0) {
+      dispatch(fetchGenres());
+    }
+  }, [dispatch, genres.length]);
+
   const filteredAudiobooks = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return audiobooks;
+    let result = audiobooks;
+
+    const query = (localSearch || searchQuery).trim().toLowerCase();
+    if (query) {
+      result = result.filter(
+        ab =>
+          ab.title.toLowerCase().includes(query) ||
+          ab.author.toLowerCase().includes(query) ||
+          (ab.narrators &&
+            ab.narrators.some(n => n.toLowerCase().includes(query))) ||
+          (ab.narrator && ab.narrator.toLowerCase().includes(query))
+      );
     }
 
-    const query = searchQuery.toLowerCase();
-    return audiobooks.filter(
-      ab =>
-        ab.title.toLowerCase().includes(query) ||
-        ab.author.toLowerCase().includes(query) ||
-        (ab.narrators &&
-          ab.narrators.some(n => n.toLowerCase().includes(query))) ||
-        (ab.narrator && ab.narrator.toLowerCase().includes(query))
-    );
-  }, [audiobooks, searchQuery]);
+    if (genreFilter !== 'all') {
+      result = result.filter(ab => {
+        const genres = ab.genres?.map(g => g.name) || [];
+        const single = ab.genre?.name;
+        return genres.includes(genreFilter) || single === genreFilter;
+      });
+    }
+
+    return result;
+  }, [audiobooks, searchQuery, localSearch, genreFilter]);
+
+  const genreOptions = useMemo(
+    () => [...genres].sort((a, b) => a.name.localeCompare(b.name)),
+    [genres]
+  );
 
   const handlePageChange = (page: number) => {
     dispatch(setCurrentPage(page));
   };
 
-  const handleCreateSuccess = () => {
-    setIsCreateModalOpen(false);
-    dispatch(fetchAudiobooks({ page: 1, filter }));
-  };
-
   const handleEdit = (audiobook: AudiobookApiResponse) => {
-    setEditingAudiobook(audiobook);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditSuccess = () => {
-    setIsEditModalOpen(false);
-    setEditingAudiobook(null);
-    dispatch(fetchAudiobooks({ page: currentPage, filter }));
+    navigate(`/audiobooks/${audiobook.id}/edit`, { state: { audiobook } });
   };
 
   const handleDelete = (audiobook: AudiobookApiResponse) => {
@@ -84,129 +105,165 @@ const Audiobooks: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (deletingAudiobook && deletingAudiobook.id) {
+    if (deletingAudiobook?.id) {
       setIsDeleting(true);
       try {
         await dispatch(deleteAudiobookThunk(deletingAudiobook.id)).unwrap();
-
-        // Close modal immediately after successful delete
         setIsDeleteModalOpen(false);
         setDeletingAudiobook(null);
         setIsDeleting(false);
 
-        // Fetch updated list - adjust page if current page becomes empty
         const targetPage =
           pagination && currentPage > 1 && audiobooks.length === 1
             ? currentPage - 1
             : currentPage;
 
         await dispatch(fetchAudiobooks({ page: targetPage, filter })).unwrap();
-
-        // Update current page if we adjusted it
         if (targetPage !== currentPage) {
           dispatch(setCurrentPage(targetPage));
         }
       } catch (error) {
         showApiError(error);
         setIsDeleting(false);
-        // Keep modal open on error so user can try again
       }
     }
   };
 
+  const showingFrom = pagination
+    ? (pagination.currentPage - 1) * pagination.itemsPerPage + 1
+    : 1;
+  const showingTo = pagination
+    ? Math.min(
+        pagination.currentPage * pagination.itemsPerPage,
+        pagination.totalItems
+      )
+    : filteredAudiobooks.length;
+
   return (
     <div className="audiobooks-page">
-      <div className="audiobooks-header">
-        <h2>Audiobooks</h2>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          Create Audiobook
-        </Button>
-      </div>
+      <div className="audiobooks-layout">
+        <div className="audiobooks-main">
+          <div className="audiobooks-header">
+            <div>
+              <h1 className="audiobooks-title">Audiobooks</h1>
+              <p className="audiobooks-subtitle">
+                Manage live, scheduled, and draft releases across your catalog.
+              </p>
+            </div>
+            <div className="audiobooks-header-actions">
+              <Button
+                variant="outline"
+                onClick={() => toast('Import catalog coming soon')}
+              >
+                <Upload size={16} className="btn-icon-left" />
+                Import Catalog
+              </Button>
+              <Button onClick={() => navigate('/audiobooks/create')}>
+                <Plus size={16} className="btn-icon-left" />
+                Create Audiobook
+              </Button>
+            </div>
+          </div>
 
-      <div className="audiobooks-tabs">
-        <button
-          className={`tab-button tab-button-live ${filter === 'live' ? 'active' : ''}`}
-          onClick={() => dispatch(setFilter('live'))}
-        >
-          Live
-        </button>
-        <button
-          className={`tab-button tab-button-scheduled ${filter === 'scheduled' ? 'active' : ''}`}
-          onClick={() => dispatch(setFilter('scheduled'))}
-        >
-          Scheduled
-        </button>
-      </div>
+          <SummaryCards totalTitles={pagination?.totalItems} />
 
-      {loading && (
-        <div className="loading-state">
-          <p>Loading audiobooks...</p>
-        </div>
-      )}
-
-      {!loading && filteredAudiobooks.length === 0 && (
-        <div className="empty-state">
-          <p>No audiobooks found. Create one to get started.</p>
-        </div>
-      )}
-
-      {!loading && filteredAudiobooks.length > 0 && (
-        <>
-          <div className="audiobooks-grid">
-            {filteredAudiobooks.map(audiobook => (
-              <AudiobookCard
-                key={audiobook.id}
-                audiobook={audiobook}
-                onClick={() => navigate(`/audiobooks/${audiobook.id}/chapters`)}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
+          <div className="audiobooks-tabs">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`audiobooks-tab ${filter === tab.id ? 'active' : ''}`}
+                onClick={() => dispatch(setFilter(tab.id))}
+              >
+                {tab.label}
+              </button>
             ))}
           </div>
 
-          {pagination && pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={handlePageChange}
+          <div className="audiobooks-filters">
+            <input
+              type="search"
+              className="audiobooks-local-search"
+              placeholder="Search audiobooks"
+              value={localSearch}
+              onChange={e => setLocalSearch(e.target.value)}
             />
+            <select
+              className="audiobooks-filter-select"
+              value={genreFilter}
+              onChange={e => setGenreFilter(e.target.value)}
+            >
+              <option value="all">Genre</option>
+              {genreOptions.map(genre => (
+                <option key={genre.id} value={genre.name}>
+                  {genre.name}
+                </option>
+              ))}
+            </select>
+            <select className="audiobooks-filter-select" defaultValue="all">
+              <option value="all">Language</option>
+            </select>
+            <select className="audiobooks-filter-select" defaultValue="recent">
+              <option value="recent">Sort by</option>
+            </select>
+          </div>
+
+          {loading && (
+            <div className="loading-state">
+              <p>Loading audiobooks...</p>
+            </div>
           )}
-        </>
-      )}
 
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Create New Audiobook"
-        size="large"
-      >
-        <AudiobookForm
-          onSuccess={handleCreateSuccess}
-          onCancel={() => setIsCreateModalOpen(false)}
-        />
-      </Modal>
+          {!loading && filteredAudiobooks.length === 0 && (
+            <div className="empty-state marketing-card">
+              <p>
+                {filter === 'drafts' || filter === 'archived'
+                  ? `No ${filter} audiobooks yet.`
+                  : 'No audiobooks found. Create one to get started.'}
+              </p>
+            </div>
+          )}
 
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingAudiobook(null);
-        }}
-        title="Edit Audiobook"
-        size="large"
-      >
-        {editingAudiobook && (
-          <AudiobookForm
-            audiobookId={editingAudiobook.id}
-            initialData={editingAudiobook}
-            onSuccess={handleEditSuccess}
-            onCancel={() => {
-              setIsEditModalOpen(false);
-              setEditingAudiobook(null);
-            }}
-          />
-        )}
-      </Modal>
+          {!loading && filteredAudiobooks.length > 0 && (
+            <>
+              <AudiobookTable
+                audiobooks={filteredAudiobooks}
+                filter={filter}
+                onRowClick={ab => navigate(`/audiobooks/${ab.id}/chapters`)}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+
+              <div className="audiobooks-pagination-bar">
+                {pagination && (
+                  <p className="audiobooks-showing">
+                    Showing {showingFrom}–{showingTo} of{' '}
+                    {pagination.totalItems} audiobooks
+                  </p>
+                )}
+                {pagination && pagination.totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+                <select className="audiobooks-filter-select" defaultValue="10">
+                  <option value="10">10 / page</option>
+                  <option value="25">25 / page</option>
+                </select>
+              </div>
+            </>
+          )}
+        </div>
+
+        <aside className="audiobooks-sidebar">
+          <UpcomingReleasesWidget />
+          <PerformanceSnapshotWidget />
+          <QuickActionsWidget />
+          <RecentActivityWidget />
+        </aside>
+      </div>
 
       <ConfirmDialog
         isOpen={isDeleteModalOpen}

@@ -1,4 +1,11 @@
-export type UserRole = 'USER' | 'ADMIN' | 'AUTHOR';
+export type UserRole =
+  | 'LISTENER'
+  | 'GLOBAL_ADMIN'
+  | 'ORG_ADMIN'
+  | 'ORG_COORDINATOR'
+  | 'AUTHOR';
+
+export type LoginAppType = 'organization' | 'author';
 
 /**
  * Browser device metadata sent with login requests
@@ -17,6 +24,7 @@ export interface LoginRequest {
   password: string;
   clientType: string;
   device?: DeviceInfo;
+  slug?: string;
 }
 
 /**
@@ -25,12 +33,15 @@ export interface LoginRequest {
 export interface LoginResponse {
   token?: string;
   accessToken?: string;
+  refreshToken?: string;
+  appType?: LoginAppType;
   role?: UserRole;
   user?: {
     id: string;
     email: string;
     name?: string;
     role?: UserRole;
+    emailVerified?: boolean;
   };
   message?: string;
 }
@@ -48,6 +59,7 @@ export interface CsrfTokenResponse {
 export interface RefreshResponse {
   accessToken?: string;
   token?: string;
+  appType?: LoginAppType;
   role?: UserRole;
   user?: LoginResponse['user'];
 }

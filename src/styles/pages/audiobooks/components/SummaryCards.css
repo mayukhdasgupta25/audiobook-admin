@@ -1,0 +1,85 @@
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.summary-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-card-icon--purple {
+  background: #a5b4fc;
+  color: #3730a3;
+}
+
+.summary-card-icon--green {
+  background: #6ee7b7;
+  color: #047857;
+}
+
+.summary-card-icon--orange {
+  background: #fcd34d;
+  color: #b45309;
+}
+
+.summary-card-icon--blue {
+  background: #7dd3fc;
+  color: #0369a1;
+}
+
+.summary-card-icon--pink {
+  background: #f9a8d4;
+  color: #9d174d;
+}
+
+.summary-card-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+}
+
+.summary-card-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.summary-card-subtext {
+  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+@media (max-width: 1200px) {
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+}

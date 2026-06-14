@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useAppDispatch } from '../../hooks/redux';
+import { useUserProfile } from '../../hooks/useUserProfile';
 import { setSearchQuery } from '../../store/slices/audiobooksSlice';
 import TopNavigation from './TopNavigation';
 import SideNavigation from './SideNavigation';
@@ -14,6 +15,7 @@ const Layout: React.FC = () => {
   const [searchValue, setSearchValue] = useState('');
   const dispatch = useAppDispatch();
   const location = useLocation();
+  useUserProfile();
   // Update Redux search query when search value changes and we're on audiobooks page
   useEffect(() => {
     if (location.pathname.startsWith('/audiobooks')) {

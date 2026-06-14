@@ -34,6 +34,7 @@ export interface AudiobookApiResponse {
   narrators?: string[];
   description: string;
   duration?: number;
+  chapterCount?: number;
   fileSize?: number;
   coverImage?: string;
   language?: string;
@@ -48,6 +49,7 @@ export interface AudiobookApiResponse {
   genre?: AudiobookGenre;
   genres?: AudiobookGenre[];
   meta?: Record<string, string>;
+  minSubscriptionTier?: number | null;
 }
 
 /**
@@ -88,10 +90,18 @@ export interface AudiobookFormData {
   description: string;
   genres: Genre[];
   tags: Tag[];
+  language: string;
   coverImage: File | null;
   scheduledAt?: string;
   meta: Record<string, string>;
+  isPaid: boolean;
+  minSubscriptionTier: number | null;
+  moodId: string | null;
 }
+
+export type AudiobookWizardData = AudiobookFormData & {
+  existingCoverUrl?: string;
+};
 
 /**
  * Chapter form data structure
@@ -109,6 +119,16 @@ export interface ChapterFormData {
 }
 
 /**
+ * Audiobook owner reference for create/update payloads
+ */
+export type AudioBookOwnerType = 'AUTHOR' | 'ORGANIZATION';
+
+export interface AudioBookOwnerInput {
+  type: AudioBookOwnerType;
+  id: string;
+}
+
+/**
  * Create Audiobook request payload
  */
 export interface CreateAudiobookRequest {
@@ -118,12 +138,16 @@ export interface CreateAudiobookRequest {
   description: string;
   genreIds: string[];
   tagIds: string[];
-  organizationId?: string;
+  owner?: AudioBookOwnerInput;
   duration: number;
   fileSize: number;
+  language?: string;
   coverImage?: File;
   scheduledAt?: string;
   meta?: Record<string, string>;
+  isPublic?: boolean;
+  minSubscriptionTier?: number;
+  moodId?: string;
 }
 
 /**
@@ -139,10 +163,19 @@ export interface UpdateAudiobookRequest {
   tagIds?: string[];
   duration?: number;
   fileSize?: number;
+  language?: string;
   coverImage?: File;
   scheduledAt?: string;
   meta?: Record<string, string>;
+  isPublic?: boolean;
+  minSubscriptionTier?: number;
+  moodId?: string;
 }
+
+export type ChapterWizardData = ChapterFormData & {
+  existingCoverUrl?: string;
+  existingAudioUrl?: string;
+};
 
 /**
  * Pagination information from API
@@ -195,6 +228,8 @@ export interface ChapterApiResponse {
   fileUrl?: string;
   coverImage?: string;
   isActive?: boolean;
+  sourceUploadStatus?: 'pending' | 'ready' | 'failed';
+  sourceUploadError?: string | null;
   scheduledAt?: string;
   createdAt?: string;
   updatedAt?: string;

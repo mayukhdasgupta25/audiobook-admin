@@ -8,10 +8,47 @@ const Login = lazy(() => import('./pages/login/Login'));
 const PartnerRegister = lazy(() => import('./pages/partner/PartnerRegister'));
 const Layout = lazy(() => import('./components/layout/Layout'));
 const Audiobooks = lazy(() => import('./pages/audiobooks/Audiobooks'));
+const AudiobookWizard = lazy(() => import('./pages/audiobooks/AudiobookWizard'));
 const Chapters = lazy(() => import('./pages/chapters/Chapters'));
+const ChapterWizard = lazy(() => import('./pages/chapters/ChapterWizard'));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Analytics = lazy(() => import('./pages/analytics/Analytics'));
 const Management = lazy(() => import('./pages/management/Management'));
+const Team = lazy(() => import('./pages/team/Team'));
 const Inbox = lazy(() => import('./pages/inbox/Inbox'));
+const Settings = lazy(() => import('./pages/settings/Settings'));
+
+const AuthLoadingScreen = () => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+    }}
+  >
+    <LoadingSpinner />
+  </div>
+);
+
+/**
+ * Guest-only route — redirects authenticated users away from public pages
+ */
+const GuestRoute = ({ children }: { children: React.ReactElement }) => {
+  const { isAuthenticated, isInitialized } = useAppSelector(
+    state => state.auth
+  );
+
+  if (!isInitialized) {
+    return <AuthLoadingScreen />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/audiobooks" replace />;
+  }
+
+  return children;
+};
 
 /**
  * Protected Route component
@@ -22,18 +59,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   );
 
   if (!isInitialized) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <LoadingSpinner />
-      </div>
-    );
+    return <AuthLoadingScreen />;
   }
 
   if (!isAuthenticated) {
@@ -61,9 +87,30 @@ function App() {
         }
       >
         <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/partner/register" element={<PartnerRegister />} />
+          <Route
+            path="/"
+            element={
+              <GuestRoute>
+                <Landing />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/partner/register"
+            element={
+              <GuestRoute>
+                <PartnerRegister />
+              </GuestRoute>
+            }
+          />
           <Route
             element={
               <ProtectedRoute>
@@ -75,15 +122,24 @@ function App() {
               path="/home"
               element={<Navigate to="/audiobooks" replace />}
             />
-            <Route path="/audiobooks" element={<Audiobooks />} />
-            <Route path="/audiobooks/:id/chapters" element={<Chapters />} />
+            <Route path="/audiobooks/create" element={<AudiobookWizard />} />
+            <Route path="/audiobooks/:id/edit" element={<AudiobookWizard />} />
             <Route
-              path="/analytics"
-              element={<Navigate to="/dashboard" replace />}
+              path="/audiobooks/:id/chapters/create"
+              element={<ChapterWizard />}
             />
+            <Route
+              path="/audiobooks/:id/chapters/:chapterId/edit"
+              element={<ChapterWizard />}
+            />
+            <Route path="/audiobooks/:id/chapters" element={<Chapters />} />
+            <Route path="/audiobooks" element={<Audiobooks />} />
+            <Route path="/analytics" element={<Analytics />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/management" element={<Management />} />
+            <Route path="/team" element={<Team />} />
             <Route path="/inbox" element={<Inbox />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<Navigate to="/audiobooks" replace />} />
         </Routes>

@@ -9,13 +9,14 @@ export function useFilePreviewUrl(
   );
 
   useEffect(() => {
-    if (file) {
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
+    if (!file) {
+      setPreviewUrl(existingUrl ?? null);
+      return;
     }
 
-    setPreviewUrl(existingUrl ?? null);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
   }, [file, existingUrl]);
 
   return previewUrl;

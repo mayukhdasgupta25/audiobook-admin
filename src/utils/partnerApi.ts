@@ -35,9 +35,7 @@ function getPublicJsonHeaders(): HeadersInit {
   };
 }
 
-function storeTokenFromResponse(
-  response: RegisterResponse | VerifyRegistrationOtpResponse
-): void {
+function storeTokenFromResponse(response: VerifyRegistrationOtpResponse): void {
   if (response.accessToken) {
     setAccessToken(response.accessToken);
   } else if (response.token) {

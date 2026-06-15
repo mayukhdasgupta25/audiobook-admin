@@ -1,6 +1,7 @@
 import { ChangeEvent, DragEvent, useId, useRef, useState } from 'react';
 import { CloudUpload, X } from 'lucide-react';
 import { useFilePreviewUrl } from '../../hooks/useFilePreviewUrl';
+import '../../styles/components/common/FileUploadZone.css';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
@@ -13,6 +14,7 @@ interface ImageUploadZoneProps {
   compact?: boolean;
   showPreview?: boolean;
   ariaLabel?: string;
+  recommendedSizeHint?: string;
 }
 
 function isAcceptedImage(file: File): boolean {
@@ -27,6 +29,18 @@ function isAcceptedImage(file: File): boolean {
   return false;
 }
 
+function buildHintText(compact: boolean, recommendedSizeHint?: string): string | null {
+  if (compact) {
+    return null;
+  }
+
+  if (recommendedSizeHint) {
+    return `Recommended size: ${recommendedSizeHint} · JPG, PNG, or WebP · Max 5 MB`;
+  }
+
+  return 'Recommended: Square JPG, PNG (512×512) · Max 5 MB';
+}
+
 function ImageUploadZone({
   value,
   onChange,
@@ -35,11 +49,13 @@ function ImageUploadZone({
   compact = false,
   showPreview = true,
   ariaLabel = 'Upload image',
+  recommendedSizeHint,
 }: ImageUploadZoneProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
+  const hintText = buildHintText(compact, recommendedSizeHint);
 
   const validateAndSet = (file: File | null) => {
     setError('');
@@ -90,7 +106,7 @@ function ImageUploadZone({
     <div className={`image-upload-zone${compact ? ' image-upload-zone--compact' : ''}`}>
       <label
         htmlFor={inputId}
-        className={`image-upload-dropzone${compact ? ' image-upload-dropzone--compact' : ''}${dragOver ? ' image-upload-dropzone--active' : ''}`}
+        className={`image-upload-dropzone${compact ? ' image-upload-dropzone--compact' : ''}${dragOver ? ' image-upload-dropzone--active' : ''}${disabled ? ' image-upload-dropzone--disabled' : ''}`}
         onDragOver={event => {
           event.preventDefault();
           if (!disabled) {
@@ -115,9 +131,7 @@ function ImageUploadZone({
             </>
           )}
         </p>
-        {!compact && (
-          <p className="image-upload-hint">Recommended: Square JPG, PNG (512×512)</p>
-        )}
+        {hintText && <p className="image-upload-hint">{hintText}</p>}
         <input
           id={inputId}
           ref={inputRef}
@@ -165,7 +179,7 @@ function ImageUploadZone({
         </div>
       )}
 
-      {error && <span className="partner-error-message">{error}</span>}
+      {error && <span className="upload-zone-error">{error}</span>}
     </div>
   );
 }

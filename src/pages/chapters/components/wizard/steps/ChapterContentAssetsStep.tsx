@@ -25,6 +25,7 @@ function ChapterContentAssetsStep({
           onChange={coverImage => onChange({ coverImage })}
           disabled={isLoading}
           showPreview={false}
+          recommendedSizeHint="960 × 960"
         />
         {errors.coverImage && (
           <span className="wizard-field-error">{errors.coverImage}</span>

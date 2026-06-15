@@ -34,6 +34,8 @@
 }
 
 .audiobook-wizard .image-upload-dropzone,
-.audiobook-wizard .image-upload-selected {
+.audiobook-wizard .image-upload-selected,
+.audiobook-wizard .audio-upload-dropzone,
+.audiobook-wizard .audio-upload-selected {
   border-color: var(--audiobook-control-border);
 }

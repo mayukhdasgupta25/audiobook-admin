@@ -1,6 +1,6 @@
 import { formatDurationDetailed } from '../../../../../utils/formatting';
+import AudioUploadZone from '../../../../../components/common/AudioUploadZone';
 import type { ChapterWizardData } from '../../../../../types/audiobook';
-import '../../../../../styles/pages/chapters/components/forms/ChapterForm.css';
 
 interface ChapterAudioStepProps {
   data: ChapterWizardData;
@@ -24,7 +24,7 @@ function ChapterAudioStep({
   return (
     <div className="wizard-step-form">
       <div className="wizard-field-group">
-        <label htmlFor="chapter-file">
+        <label>
           Audio File {mode === 'create' && <span className="wizard-required">*</span>}
           {mode === 'edit' && (
             <span className="optional-text">
@@ -36,22 +36,13 @@ function ChapterAudioStep({
         {mode === 'edit' && data.existingAudioUrl && !data.file && (
           <p className="narrators-hint">Current audio file is attached.</p>
         )}
-        <input
-          id="chapter-file"
-          type="file"
-          accept="audio/*"
-          onChange={e => onFileChange(e.target.files?.[0] || null)}
-          disabled={isLoading || isLoadingMetadata}
-          className={errors.file ? 'input-error' : ''}
+        <AudioUploadZone
+          value={data.file}
+          onChange={onFileChange}
+          disabled={isLoading}
+          isLoading={isLoadingMetadata}
+          ariaLabel="Upload chapter audio file"
         />
-        {isLoadingMetadata && (
-          <span className="loading-message">Loading audio metadata...</span>
-        )}
-        {data.file && (
-          <div className="file-preview">
-            <span className="file-name">{data.file.name}</span>
-          </div>
-        )}
         {errors.file && <span className="wizard-field-error">{errors.file}</span>}
       </div>
 

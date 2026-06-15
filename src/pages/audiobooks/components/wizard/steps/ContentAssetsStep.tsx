@@ -25,6 +25,7 @@ function ContentAssetsStep({
           onChange={coverImage => onChange({ coverImage })}
           disabled={isLoading}
           showPreview={false}
+          recommendedSizeHint="700 × 1000"
           ariaLabel="Upload cover image"
         />
         {errors.coverImage && (
